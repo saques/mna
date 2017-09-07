@@ -4,7 +4,7 @@ import cv2
 
 NUM_INDIVIDUALS = 40
 
-NUM_SAMPLE = 7
+NUM_SAMPLE = 2
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -26,9 +26,19 @@ def calculate_omega(eigfaces, face, average_face):
     projected = np.stack(projected)
     return projected / np.linalg.norm(projected, 2)
 
+
+def normalize_matrix(m):
+    ans = []
+    for p in range(0, m.shape[0]):
+        ans.append(m[p] / np.linalg.norm(m[p]))
+    ans = np.stack(ans)
+    return ans
+
+
 average_omegas = []
 outer_eigenfaces = None
 outer_mean = None
+
 
 for i in range(0, NUM_SAMPLE):
 
@@ -47,10 +57,7 @@ for i in range(0, NUM_SAMPLE):
         eigenfaces.append(np.dot(dbc.transpose(), ps_eigenvecs[x]))
     eigenfaces = np.stack(eigenfaces)
 
-    normalized_eigenfaces = []
-    for x in range(0, eigenfaces.shape[0]):
-        normalized_eigenfaces.append(eigenfaces[x] / np.linalg.norm(eigenfaces[x]))
-    normalized_eigenfaces = np.stack(normalized_eigenfaces)
+    normalized_eigenfaces = normalize_matrix(eigenfaces)
 
     # Calculating weighs of eigenfaces relative to the
     # i-th face of the database
@@ -69,13 +76,12 @@ for i in range(0, NUM_SAMPLE):
 
 outer_mean /= NUM_SAMPLE
 outer_eigenfaces /= NUM_SAMPLE
-normalized_outer_eigenfaces = []
-for x in range(0, eigenfaces.shape[0]):
-    normalized_outer_eigenfaces.append(outer_eigenfaces[x] / np.linalg.norm(outer_eigenfaces[x]))
-normalized_outer_eigenfaces = np.stack(normalized_outer_eigenfaces)
+normalized_outer_eigenfaces = normalize_matrix(outer_eigenfaces)
 
 average_omegas = np.stack(average_omegas)
 average_omegas /= NUM_SAMPLE
+
+average_omegas = normalize_matrix(average_omegas)
 
 # Up to this point we have built a matrix containing in each
 # the mean omega for each face in the database, taking into
@@ -87,7 +93,7 @@ average_omegas /= NUM_SAMPLE
 
 
 # Testing against a set of faces not present in the omega's set
-new_db = load_images(5)
+new_db = load_images(7)
 
 counter = 0
 
