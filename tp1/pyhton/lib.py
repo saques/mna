@@ -1,6 +1,5 @@
 import time
 from math import *
-
 import numpy as np
 import cv2
 
@@ -122,7 +121,7 @@ def ov_householder(x):
 def qr_householder(a):
     m, n = np.shape(a)
     Q = np.eye(m)
-    R = np.copy(a)
+    R = a.astype(float)
     for i in range(0, n-1):
         vh = ov_householder(R[i:, i]).reshape((m-i, 1))
         H = np.eye(m)
@@ -130,3 +129,20 @@ def qr_householder(a):
         Q = np.dot(Q, H)
         R = np.dot(H, R)
     return Q, R
+
+
+def hessemberg(a):
+    m, n = np.shape(a)
+    P = np.eye(m)
+    R = a.astype(float)
+    for i in range(0, n-2):
+        vh = ov_householder(R[i+1:, i]).reshape((m-i-1, 1))
+        H = np.eye(m)
+        H[i+1:, i+1:] -= 2.0 * np.dot(vh, vh.transpose())
+        P = np.dot(H, P)
+        R = np.dot(H, R)
+        R = np.dot(R, H.transpose())
+    return P, R
+
+
+# x = np.array([[1, 2, 8],[5, 9, 3], [8, 55, 4]])
