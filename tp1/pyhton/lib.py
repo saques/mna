@@ -1,3 +1,4 @@
+import time
 from math import *
 
 import numpy as np
@@ -98,5 +99,40 @@ def qr_givens(a):
                 R = np.dot(G.transpose(), R)
                 Q = np.dot(Q, G)
     return Q, R
+
+
+def v_householder(x):
+    v = []
+    alpha = np.linalg.norm(x)
+    alpha *= -1*np.sign(x[0])
+    v0 = -1*np.sign(alpha)*sqrt((alpha-x[0])/(2*alpha))
+    v.append(v0)
+    for i in range(1, np.shape(x)[0]):
+        v.append((-1*x[i])/(2*alpha*v0))
+    return np.stack(v)
+
+
+def qr_householder(a):
+    m, n = np.shape(a)
+    Q = np.eye(m)
+    R = np.copy(a)
+    for i in range(0, n-1):
+        vh = v_householder(R[i:, i]).reshape((m-i, 1))
+        H = np.eye(m)
+        H[i:, i:] -= 2.0 * np.dot(vh, vh.transpose())
+        Q = np.dot(Q, H)
+        R = np.dot(H, R)
+    return Q, R
+
+
+
+
+
+
+
+
+
+
+
 
 
