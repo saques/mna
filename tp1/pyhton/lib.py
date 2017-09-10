@@ -112,27 +112,23 @@ def v_householder(x):
     return np.stack(v)
 
 
+# Better complexity
+def ov_householder(x):
+    norm = np.linalg.norm(x)
+    u = x.astype(float)
+    u[0] += np.sign(u[0])*norm
+    v = np.divide(u, np.linalg.norm(u))
+    return v
+
+
 def qr_householder(a):
     m, n = np.shape(a)
     Q = np.eye(m)
     R = np.copy(a)
     for i in range(0, n-1):
-        vh = v_householder(R[i:, i]).reshape((m-i, 1))
+        vh = ov_householder(R[i:, i]).reshape((m-i, 1))
         H = np.eye(m)
         H[i:, i:] -= 2.0 * np.dot(vh, vh.transpose())
         Q = np.dot(Q, H)
         R = np.dot(H, R)
     return Q, R
-
-
-
-
-
-
-
-
-
-
-
-
-
