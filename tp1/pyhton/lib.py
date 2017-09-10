@@ -89,13 +89,11 @@ def qr_givens(a):
     R = np.copy(a)
     for y in range(0, m):
         for x in reversed(range(y+1, m)):
-            if R[x,y] != 0:
+            if R[x, y] != 0:
                 c, s = givens_rotation(R[x-1, y], R[x, y])
                 G = np.eye(m)
-                G[x-1, x-1] = c
-                G[x-1, x] = -s
-                G[x, x-1] = s
-                G[x, x] = c
+                sq = np.array([[c, -s], [s, c]])
+                G[x-1:x+1, x-1:x+1] = sq
                 R = np.dot(G.transpose(), R)
                 Q = np.dot(Q, G)
     return Q, R
