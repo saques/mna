@@ -18,6 +18,15 @@ def load_images(i):
     return np.stack(database)
 
 
+def load_images_2(i):
+    database = []
+    for path in xrange(0, NUM_INDIVIDUALS):
+        for x in xrange(0,i):
+            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1,x+1), flags=cv2.IMREAD_GRAYSCALE)
+            database.append(np.ravel(im))
+    return np.stack(database)
+
+
 # Returns a vector with Vi = weight of the i-th
 # eigenface relative to the face passed as parameter
 def calculate_omega(eigfaces, face):
@@ -52,7 +61,7 @@ def eig(a):
         identity = np.eye(dim)
         prev = None
 
-        while prev is None or np.abs(prev-x[dim-1, dim-1] > TOLERANCE):
+        while prev is None or np.abs(prev-x[dim-1, dim-1]) > TOLERANCE:
             prev = x[dim-1, dim-1]
             mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
             q, r = np.linalg.qr(x - np.dot(mu, identity))
