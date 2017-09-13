@@ -1,121 +1,50 @@
 import numpy as np
 import cv2
-import os.path
+from itertools import chain
+from faceless import *
 
 '''
 Facial Recognition using PCA
 '''
 
-
-def load_images(paths):
-    """
-    Load images from a list of sources. Images are loaded in gray scale.
-
-    :param paths: Array of sources to load images.
-    :return: A matrix with each image represented as an array on each row.
-    """
-
-    database = []
-    for path in paths:
-        num_files = len([f for f in os.listdir(path)
-                     if os.path.isfile(os.path.join(path, f))])
-        print "loading %s from %s" %( num_files, path)
-        for x in range(1,num_files+1):
-            im = cv2.imread("%s/%d.pgm" % (path,x), flags=cv2.IMREAD_GRAYSCALE)
-            database.append(np.ravel(im))
-    return np.stack(database)
-
-
-def print_image(mat, name='image', time=1000):
-    """
-    Shows an image in a separate windows
-
-    :param mat: Matrix where the image is stored.
-                Its values must be between 0 and 255.
-    :param name: Name of the image's window.
-    :param time: Time the images will be display (0 is no limit).
-    """
-
-    cv2.imshow(name, mat / 255.)
-    cv2.waitKey(time)
-    cv2.destroyAllWindows()
-
-def print_images(mats, name='image', time=1000):
-    """
-    Shows images in a separate windows
-
-    :param mats: Matrices where the images are stored.
-                 Its values must be between 0 and 255.
-    :param name: Name of the image's window.
-    :param time: Time the images will be display (0 is no limit).
-    """
-
-    for index, m in enumerate(mats):
-        cv2.imshow(name + str(index), m / 255.)
-
-    cv2.waitKey(time)
-    cv2.destroyAllWindows()
-
-
 # Constants
 IMG_HEIGHT = 112
 IMG_WIDTH = 92
+AMOUNT_EIGENFACES = 10
+#Lista de paths donde estan las personas, se usa el path como el nombre de la persona
+persons = list(map(lambda x: "../orl_faces/s%d" %(x),range(1,41)))
+persons.append("../faces/pedro") #comenten esta linea para agregar o no a pedro
+#lista de fotos usada para el training data, usa todas las fotos de las perona en "persons"
+photos_per_person = [8,7];
 
+training_db, training_classes = load_images(persons, photos_per_person)
+print training_classes
+mean_face = calculate_mean_face(training_db)
 
-# Load all images from database (located in '../faces')
-# db = loadImages(["../faces/s1","../faces/s2","../faces/s3","../faces/s4","../faces/s5"])
-db = load_images(["../faces"])
+print_image(np.reshape(mean_face, [IMG_HEIGHT, IMG_WIDTH]), "mean", 500)
 
-# Calculating mean of all faces
-mean_face = db.mean(0)
-mean_face = np.int_(mean_face)
-dbc = db - mean_face
+#Calculate normalized database
+dbc = training_db - mean_face
+#Find eigenfaces of the database
+eigenfaces = calc_eigenfaces(dbc,AMOUNT_EIGENFACES)
 
-print_image(np.reshape(mean_face, [112, 92]), "mean", 500)
+face_to_find,target_class = load_images(persons,range(1,11))
 
+win = 0
+total = 0
+for index in range(0,face_to_find.shape[0]):
+    results =  find_closest_faces(face_to_find[index]-mean_face,eigenfaces,dbc)
+    person_proba = analize_matchs(results, training_classes)
 
-# Calculating pseudo-covariance matrix and calculating its eigenvalues
-# and eigenvectors.
-pseudo = np.dot(dbc, dbc.transpose())
-eigenvalues, eigenvectors = np.linalg.eig(pseudo)
+    tag = ("Target '%s' Probabilites %s") %(target_class[index],person_proba[0:3])
+    total = total+1
+    if person_proba[0][0] == target_class[index]:
+        # print "GANO: " + tag
+        win = win +1;
+    else:
+        print "PERDIO: " + tag
 
-# Calculating eigenfaces using the best eigenvectors (ranked by their
-# eigenvalues). This is made by projecting the original mean-substracted images.
-eigenfaces = []
-for x in range(eigenvectors.shape[0]):
-    eigenfaces.append(np.dot(dbc.transpose(), eigenvectors[x]))
-
-eigenfaces = np.stack(eigenfaces)
-
-
-def find_closest_face(id, eigenfaces_arg, normalized_database):
-    closest_faces = []
-    face_weights = norm_img_weights(eigenfaces_arg, normalized_database[id])
-    for x in range(normalized_database.shape[0]):
-        val = norm_img_weights(eigenfaces_arg, normalized_database[x]) - face_weights
-        val = np.linalg.norm(val, 2)
-        closest_faces.append((x, val))
-
-    closest_faces = sorted(closest_faces, key=lambda x: x[1])
-    return closest_faces
-
-
-def norm_img_weights(eigenfaces_arg, face):
-    a = calculate_img_weights(eigenfaces_arg, face)
-    return a / np.linalg.norm(a, 2)
-
-
-def calculate_img_weights(eigenfaces_arg, face):
-    projected = []
-    for x in range(eigenfaces_arg.shape[0]):
-        projected.append(np.dot(np.transpose(eigenfaces_arg[x]), face))
-
-    projected = np.stack(projected)
-    return projected
-
-
-# Look for the nearest face
-print "CLOSEST FACES"
-closest_faces = find_closest_face(43, eigenfaces, dbc)
-print closest_faces
+print "RATIO: %f, WIN: %d, TOTAL: %d, LOST: %d" %(100.0*win/total,win,total,total-win)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
