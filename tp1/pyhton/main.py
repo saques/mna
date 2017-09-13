@@ -12,7 +12,7 @@ IMG_HEIGHT = 112
 IMG_WIDTH = 92
 AMOUNT_EIGENFACES = 10
 #Lista de paths donde estan las personas, se usa el path como el nombre de la persona
-persons = list(map(lambda x: "../faces/s%d" %(x),range(1,41)))
+persons = list(map(lambda x: "../orl_faces/s%d" %(x),range(1,41)))
 persons.append("../faces/pedro") #comenten esta linea para agregar o no a pedro
 #lista de fotos usada para el training data, usa todas las fotos de las perona en "persons"
 photos_per_person = [8,7];
