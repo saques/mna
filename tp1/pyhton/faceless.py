@@ -57,7 +57,7 @@ def calculate_mean_face(database):
     # Calculating mean of all faces
     return np.int_(database.mean(0))
 
-def calc_eigenfaces(normalized_database):
+def calc_eigenfaces(normalized_database,amount):
     # Calculating pseudo-covariance matrix and calculating its eigenvalues
     # and eigenvectors.
     pseudo = np.dot(normalized_database, normalized_database.transpose())
@@ -71,7 +71,7 @@ def calc_eigenfaces(normalized_database):
     for x in range(0, (eigenvectors.shape[0])):
         eigenfaces.append(np.dot(normalized_database.transpose(), eigenvectors[x]))
 
-    return np.stack(eigenfaces)
+    return np.stack(eigenfaces)[0:amount]
 
 def analize_matchs(results, classes):
     winner_weights = dict()

@@ -10,10 +10,10 @@ Facial Recognition using PCA
 # Constants
 IMG_HEIGHT = 112
 IMG_WIDTH = 92
-
-
+AMOUNT_EIGENFACES = 10
 #Lista de paths donde estan las personas, se usa el path como el nombre de la persona
-persons = list(map(lambda x: "../faces/s%d" %(x),range(1,21)))
+persons = list(map(lambda x: "../faces/s%d" %(x),range(1,41)))
+persons.append("../faces/pedro") #comenten esta linea para agregar o no a pedro
 #lista de fotos usada para el training data, usa todas las fotos de las perona en "persons"
 photos_per_person = [8,7];
 
@@ -21,12 +21,12 @@ training_db, training_classes = load_images(persons, photos_per_person)
 print training_classes
 mean_face = calculate_mean_face(training_db)
 
-print_image(np.reshape(mean_face, [IMG_HEIGHT, IMG_WIDTH]), "mean", 1500)
+print_image(np.reshape(mean_face, [IMG_HEIGHT, IMG_WIDTH]), "mean", 500)
 
 #Calculate normalized database
 dbc = training_db - mean_face
 #Find eigenfaces of the database
-eigenfaces = calc_eigenfaces(dbc)
+eigenfaces = calc_eigenfaces(dbc,AMOUNT_EIGENFACES)
 
 face_to_find,target_class = load_images(persons,range(1,11))
 
