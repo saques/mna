@@ -40,6 +40,22 @@ def print_image(mat, name='image', time=1000):
     cv2.waitKey(time)
     cv2.destroyAllWindows()
 
+def print_images(mats, name='image', time=1000):
+    """
+    Shows images in a separate windows
+
+    :param mats: Matrices where the images are stored.
+                 Its values must be between 0 and 255.
+    :param name: Name of the image's window.
+    :param time: Time the images will be display (0 is no limit).
+    """
+
+    for index, m in enumerate(mats):
+        cv2.imshow(name + str(index), m / 255.)
+
+    cv2.waitKey(time)
+    cv2.destroyAllWindows()
+
 
 # Constants
 IMG_HEIGHT = 112
@@ -49,7 +65,6 @@ IMG_WIDTH = 92
 # Load all images from database (located in '../faces')
 # db = loadImages(["../faces/s1","../faces/s2","../faces/s3","../faces/s4","../faces/s5"])
 db = load_images(["../faces"])
-
 
 # Calculating mean of all faces
 mean_face = db.mean(0)
@@ -101,5 +116,6 @@ def calculate_img_weights(eigenfaces_arg, face):
 
 # Look for the nearest face
 print "CLOSEST FACES"
-print find_closest_face(15, eigenfaces, dbc)
+closest_faces = find_closest_face(43, eigenfaces, dbc)
+print closest_faces
 
