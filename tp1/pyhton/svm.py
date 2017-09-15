@@ -56,7 +56,8 @@ ps_eigenvals, ps_eigenvecs = np.linalg.eig(pseudo)
 
 ps_eigenvals = np.absolute(ps_eigenvals)
 
-ps_indexorder = np.argsort(ps_eigenvals);
+#we mult by -1 to make argsort to order desc
+ps_indexorder = np.argsort(-ps_eigenvals)
 
 ps_sortedevectors = []
 
@@ -136,7 +137,6 @@ omegas_test = normalize_matrix(omegas_test)
 
 #Training
 clf = svm.SVC()
-clf.set_params(probability=True)
 
 clf.fit(omegas, classes)
 
