@@ -13,14 +13,32 @@
 \counterwithin*{equation}{subsection}
 
 \begin{document}
-	\title{Reconocimiento de caras con PCA y KPCA}
-	\author{Pedro BALAGUER \\ Julián BENÍTEZ \\ Mariano GARRIGÓ \\ Matías PERAZZO \\ M. Alejo SAQUÉS}
+	\title{Reconocimiento facial con PCA y KPCA \\ 
+		   \large{\textsc{Métodos Numéricos Avanzados}} \\
+		   \normalsize{\textsc{Instituto Tecnológico de Buenos Aires}}}
+	\author{
+		\textsc{Balaguer}, Pedro \\
+		\texttt{55795}
+		\and
+		\textsc{Benítez}, Julián \\
+		\texttt{56283}
+		\and
+		\textsc{Garrigó}, Mariano \\
+		\texttt{54393}
+		\and
+		\textsc{Perazzo}, Matías \\
+		\texttt{55024}
+		\and
+		\text{Saqués}, M. Alejo \\
+		\texttt{56047} 
+	}
 	\date{}
 	\maketitle
 	
 	\begin{abstract}
+		Se han empleado técnicas matriciales, tales como \textit{Principal Component Analysis} y su variante, \textit{Kernel Principal component Analysis} para la clasificación de caras en sus respectivas clases, teniendo como referencia \textit{sets} de entrenamiento.  
 		
-		
+		Asimismo, se han implementado algoritmos para el hallado de los autovectores y autovalores de una matriz, y se han explorado numerosos caminos para la descomposición QR, como así también para otras transformaciones que sirven de soporte para la implementación de un algoritmo QR mejorado.   
 	\end{abstract}
 	
 	\paragraph{Palabras clave:} Descomposición QR, Transformación de Householder, Matriz de Hessemberg, Algoritmo QR, Corrimiento de Wilkinson, Matriz de Covarianza, \textit{Principal Component Analysis}, \textit{Kernel}, \textit{Support Vector Machines}.
@@ -157,10 +175,10 @@
 	
 	\subsection{Descomposición QR}
 	
-	\paragraph{} Siendo $A$ una matriz cualquiera de $\mathbb{R}^{N\times M}$, se busca una descomposición $A = QR$ tal que $Q$ sea ortogonal y $R$ triangular superior. Utilizando los reflectores de Householder, el interés es encontrar una matriz $P$ de la forma $P = I - 2vv^{T}$ tal que se cumpla para algún vector $x$:
+	\paragraph{} Siendo $A =: A_{0}$ una matriz cualquiera de $\mathbb{R}^{N\times M}$, se busca una descomposición $A = QR$ tal que $Q$ sea ortogonal y $R$ triangular superior. Utilizando los reflectores de Householder, el interés es encontrar una matriz $H$ de la forma $H = I - 2vv^{T}$ tal que se cumpla para algún vector $x$:
 	
 	\begin{align}
-		Px = \alpha e_{1}
+		Hx = \alpha e_{1}
 	\end{align}
 	\paragraph{}Con $e1 = \left[1\quad0\quad\dots\quad0\right]^{T}$.
 	
@@ -173,9 +191,21 @@
 	\end{align}
 	\paragraph{}Con $H$ ortogonal.
 	
-	\paragraph{} La idea, pues, es generar matrices $H_{i}$ ortogonales tales que $H_{1}A$ retorne una matriz $A_{1}$ con $0_{s}$ en la primera columna por debajo de la diagonal, $H_{2}A_{1}$ además agregue $0_{s}$ en la segunda columna por debajo de la diagonal, y así sucesivamente, hasta lograr un producto $H_{M-1}H_{M-2}\dots H_{1}A = R$, con $R$ triangular superior. Nótese que, como los $H_{i}$ son ortogonales, $H_{M-1}H_{M-2}\dots H_{1} = Q^{T}$ es ortogonal. Por ende, en este punto se ha logrado una descomposición QR de la matriz $A$.
+	\paragraph{} La idea, pues, es generar matrices de Householder $H_{i}$ tales que $H_{1}A_{0}$ retorne una matriz $A_{1}$ con $0_{s}$ por debajo de la diagonal en la primera columna, $H_{2}A_{1}$ además agregue $0_{s}$ debajo de la diagonal en la segunda columna, y así sucesivamente, hasta lograr un producto $H_{M-1}H_{M-2}\dots H_{1}A = R$, tal que $R$ sea triangular superior. Los $H_{i}$ son de la siguiente forma:
 	
-	\paragraph{} Se ha probado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por fila en cada iteración.
+	\begin{align}
+	H_{i} = \begin{bmatrix} 
+	I_{i-1} & 0 	   \\
+	0 	   & \widetilde{H}_{i}         
+	\end{bmatrix}
+	\end{align}
+	
+	
+	\paragraph{} Con $1 \le i \le M-1$. La matriz $\widetilde{H}_{i}$ cumple la condición $\widetilde{H}_{i}A_{i-1_{i:,i:}} = \alpha e_{1}$, con indexación al estilo de \textsc{Matlab}. Recuérdese que $A_{0} = A$, la matriz de entrada del algoritmo.
+	
+	\paragraph{} Nótese que, como los $\widetilde{H}_{i}$ son ortogonales, por la construcción en $(5)$ los $H_{i}$ son ortogonales, luego el producto $H_{M-1}H_{M-2}\dots H_{1} = Q^{T}$ es ortogonal. Por ende, se ha conseguido una matriz $H$ triangular superior, y una $Q$ ortogonal, tal que $QR = A$, por lo que se ha logrado la descomposición requerida. 
+	
+	\paragraph{} Se ha evaluado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales, una operación de orden cúbico. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por columna en cada iteración.
 	
 	\begin{table}[h]
 		\centering
