@@ -73,6 +73,7 @@ def eig(a):
     p, x = hessemberg(a)
     d = dim = x.shape[0]
     values = []
+    vectors = np.eye(d)
     for i in range(0, d):
         identity = np.eye(dim)
         prev = None
@@ -81,11 +82,16 @@ def eig(a):
             prev = x[dim-1, dim-1]
             mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
             q, r = qr_householder(x[0:dim, 0:dim] - np.dot(mu, identity))
+
+            qi = np.eye(d)
+            qi[0:dim, 0:dim] = q
+            vectors = np.dot(vectors, qi)
+
             x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
 
         values.append(x[dim-1, dim-1])
         dim -= 1
-    return np.stack(values).round(-1*int(np.log10(TOLERANCE)))
+    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), vectors
 
 
 def givens_rotation(a, b):
@@ -174,6 +180,11 @@ def eigenmatrix(dim):
     r = np.random.rand(dim, dim)
     return np.dot(r, np.dot(i, np.linalg.inv(r)))
 
-v = eigenmatrix(10)
+A = eigenmatrix(10)
 
-print eig(v)
+values, vectors = eig(A)
+
+print values
+
+print vectors[:, 0]
+print np.dot(A, vectors[:, 0])
