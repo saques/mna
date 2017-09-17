@@ -6,7 +6,7 @@ import cv2
 
 
 NUM_INDIVIDUALS = 40
-TOLERANCE = 1E-5
+TOLERANCE = 1E-4
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -70,12 +70,9 @@ def wilkinson(a, b, c):
 
 
 def eig(a):
-    x = a
-    values = []
-    vectors = []
-
+    p, x = hessemberg(a)
     d = dim = x.shape[0]
-
+    values = []
     for i in range(0, d):
         identity = np.eye(dim)
         prev = None
@@ -83,15 +80,12 @@ def eig(a):
         while prev is None or np.abs(prev-x[dim-1, dim-1]) > TOLERANCE:
             prev = x[dim-1, dim-1]
             mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
-            q, r = np.linalg.qr(x - np.dot(mu, identity))
-            x = np.dot(r, q) + mu*identity
+            q, r = qr_householder(x[0:dim, 0:dim] - np.dot(mu, identity))
+            x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
 
         values.append(x[dim-1, dim-1])
-        vectors.append(np.transpose(x[:, -1]))
-        x = x[0:dim-1, 0:dim-1]
         dim -= 1
-
-    return values
+    return np.stack(values).round(-1*int(np.log10(TOLERANCE)))
 
 
 def givens_rotation(a, b):
@@ -173,4 +167,13 @@ def hessemberg(a):
     return P, R
 
 
-# x = np.array([[1, 2, 8],[5, 9, 3], [8, 55, 4]])
+def eigenmatrix(dim):
+    i = np.eye(dim)
+    for x in range(0, dim):
+        i[x, x] = x+1
+    r = np.random.rand(dim, dim)
+    return np.dot(r, np.dot(i, np.linalg.inv(r)))
+
+v = eigenmatrix(10)
+
+print eig(v)
