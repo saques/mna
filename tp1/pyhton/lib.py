@@ -27,6 +27,18 @@ def load_images_2(i):
             database.append(np.ravel(im))
     return np.stack(database)
 
+def load_images_and_get_class(i):
+    database = []
+    classes = np.zeros([NUM_INDIVIDUALS * i])
+    imno = 0
+    for path in xrange(0, NUM_INDIVIDUALS):
+        for idx,x in enumerate(xrange(0,i)):
+            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1,x+1), flags=cv2.IMREAD_GRAYSCALE)
+            database.append(np.ravel(im))
+            classes[imno] = path
+            imno += 1
+    return (np.stack(database), classes)
+
 
 def load_images_3(i, j):
     database = []
@@ -172,6 +184,37 @@ def hessemberg(a):
         R = np.dot(R, H.transpose())
     return P, R
 
+def print_image(mat, name='image', time=1000):
+    """
+    Shows an image in a separate windows
+
+    :param mat: Matrix where the image is stored.
+                Its values must be between 0 and 255.
+    :param name: Name of the image's window.
+    :param time: Time the images will be display (0 is no limit).
+    """
+
+    cv2.imshow(name, mat / 255.)
+    cv2.waitKey(time)
+    cv2.destroyAllWindows()
+
+def print_images(mats, name='image', time=1000):
+    """
+    Shows images in a separate windows
+
+    :param mats: Matrices where the images are stored.
+                 Its values must be between 0 and 255.
+    :param name: Name of the image's window.
+    :param time: Time the images will be display (0 is no limit).
+    """
+
+    for index, m in enumerate(mats):
+        cv2.imshow(name + str(index), m / 255.)
+
+    cv2.waitKey(time)
+    cv2.destroyAllWindows()
+
+
 
 def eigenmatrix(dim):
     i = np.eye(dim)
@@ -180,11 +223,11 @@ def eigenmatrix(dim):
     r = np.random.rand(dim, dim)
     return np.dot(r, np.dot(i, np.linalg.inv(r)))
 
-A = eigenmatrix(10)
-
-values, vectors = eig(A)
-
-print values
-
-print vectors[:, 0]
-print np.dot(A, vectors[:, 0])
+# A = eigenmatrix(10)
+#
+# values, vectors = eig(A)
+#
+# print values
+#
+# print vectors[:, 0]
+# print np.dot(A, vectors[:, 0])
