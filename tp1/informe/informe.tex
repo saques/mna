@@ -7,7 +7,9 @@
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{url}
+\usepackage{booktabs}
 \usepackage{chngcntr}
+\usepackage{amsfonts}
 \counterwithin*{equation}{subsection}
 
 \begin{document}
@@ -23,13 +25,70 @@
 	
 	\paragraph{Palabras clave:} Descomposición QR, Transformación de Householder, Matriz de Hessemberg, Algoritmo QR, Corrimiento de Wilkinson, Matriz de Covarianza, \textit{Principal Component Analysis}, \textit{Kernel}, \textit{Support Vector Machines}.
 	
+	\section{Metodologías para reconocimiento de caras}
+	
+	\paragraph{} A continuación, se exhibirán las metodologías utilizadas para \textit{software} de reconocimiento de caras, utilizando técnicas requeridas por la Cátedra. 	
+	
+	\subsection{PCA}
+	
+	\paragraph{} Para la implementación de reconocimiento de caras utilizando \textbf{PCA}, el equipo se ha basado en la técnica de Saha y Bhattacharjee $($2013$)$ \cite{PCA}.
+	
+	\paragraph{} Sea $N$ la cantidad de individuos presentes en la base de datos, y sea $M$ la cantidad de imágenes de cada uno de ellos que se usarán a los efectos de \textit{entrenar} el \textit{software} de reconocimiento. Cada imagen tiene una dimensión $X\times Y$. Luego, se debe construir una matriz $T \in \mathbb{N}^{MN\times XY}$ que contenga todas las muestras a analizar. Luego, a la matriz $T$ se le resta fila por fila la \textit{cara promedio} $M$, es decir, la media de las filas de $T$. Esta matriz $C = T - M$ puede contener valores negativos, por lo que $C \in \mathbb{Z}^{MN\times XY}$.
+	
+	\paragraph{} El siguiente paso en el método de \textbf{PCA} es el hallado de los autovectores de la matriz de covarianza $S = C^{T}C$. Dichos autovectores son también referidos en la bibliografía por el nombre de \textit{autocaras o eigenfaces}. Es preciso observar que el producto $C^{T}C \in \mathbb{Z}^{XY\times XY}$, por lo cual, dado que $X\times Y$ es el número de píxeles de las imágenes, es de esperar que la matriz de covarianza $S$ sea de una dimensión excesivamente grande. Por ende, el objetivo es calcular las \textit{eigenfaces} de una forma computacionalmente más económica.
+	
+	\paragraph{} Nótese que la dimensión de la matriz $\widetilde{S} = CC^{T}$  $(\widetilde{S} \in \mathbb{Z}^{MN \times MN})$ está intrínsecamente asociada al tamaño de la muestra, ya sea del número de individuos y/o del de caras por individuo. Estos valores serán, en la mayoría de los casos, de una magnitud muy inferior a la cantidad de píxeles de las imágenes y, además, las posibilidades de manipularlos son mucho más amplias. A modo de ejemplo, las imágenes de la base de datos de prueba sugerida por la Cátedra \cite{dbf} tienen una dimensión de $92 \times 112$, por lo que la matriz de covarianza $S \in \mathbb{Z}^{10304\times 10304}$. Por el contrario, $\widetilde{S} \in \mathbb{Z}^{400 \times 400}$, en el caso de tomar todas las fotos disponibles de cada individuo.
+	
+	\paragraph{} Se puede mostrar que hay un procedimiento para calcular las \textit{eigenfaces} de $S$ a partir de los autovectores de $\widetilde{S}$:
+	
+	\begin{align}
+		Sv {i} = C^{T}Cv_{i} &= \lambda_{i}v_{i}
+	\end{align}
+	
+	\paragraph{} Como se ha visto, $S$ es de una dimensión potencialmente muy grande, por ende, se toman los autovectores de la matriz $\widetilde{S}$:
+	
+	\begin{align}
+		\widetilde{S}u_{i} = CC^{T}u_{i} = \lambda_{i}u_{i}
+	\end{align}
+	
+	\paragraph{} Multiplicando por izquierda a $(2)$ por $C^{T}$ se tiene que:
+	
+	\begin{align}
+		C^{T}CC^{T}u_{i} = \lambda_{i}C^{T}u_{i} 
+	\end{align}
+	
+	\paragraph{} Luego, se puede renombrar:
+	
+	\begin{align}
+		C^{T}u_{i} = v_{i}
+	\end{align}
+	
+	\paragraph{} Por lo que si $u_{i}$ es un autovector de $\widetilde{S}$, empleando $(4)$ se puede obtener el i-ésimo autovector de $S$, es decir, de la matriz de covarianza. 
+	
+	\paragraph{} Así pues, en este punto se tiene una colección de vectores $V = \left[v_{1}\quad\dots\quad v_{MN}\right]$. El interés es ahora proyectar las imágenes de la base de datos sobre estas \textit{eigenfaces}, para formar, por cada k-ésima imagen, un vector $\Omega_{k} = \left[\omega_{1}\quad\dots\quad\omega_{MN}\right]$, donde los $\omega_{i}$ representan el peso de cada \textit{eigenface} con respecto a dicha imagen:
+	
+	\begin{align}
+		\omega_{i} = v_{i}^{T}P_{k}^{T}
+	\end{align}
+	
+	\paragraph{} Siendo $P_{k}$ la k-ésima fila de $C$. Luego, se promedian los $M$ $\Omega_{k_{s}}$ de cada individuo de la base de datos, para así lograr un valor medio $\Omega_{M_{p}}$ por cada ejemplar $1 \le p \le N$, así logrando un vector que defina la \textit{clase} de un individuo en particular.
+	
+	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
+	
+	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
+	
+	\paragraph{} Existe otra técnica para realizar el último cálculo, por medio del uso de \textit{Support Vector Machines}. En la implementación realizada, se ha utilizado la librería \verb|Sklearn| para dicho propósito. Su implementación de SVM espera, para el \textit{set} de entrenamiento, un arreglo de vectores que hagan las veces de los \textit{individuos}, y arreglo de enteros que especifique a que clase pertenece cada uno de ellos. En este caso, el primer arreglo contendrá los $\Omega_{M_{p}}$. La entrada del método \verb|predict| será el $\Omega_{Z}$ a clasificar. 
+	
+	\subsection{Kernel-PCA}
+	
+	
 	\section{Algoritmos de soporte}
 	
 	\paragraph{} A los efectos de implementar la metodología expuesta, es preciso contar con un método para el cálculo de los autovalores y autovectores de una matriz. A continuación, se expondrán los detalles de dicho algoritmo, el \textbf{algoritmo QR}, como así también los detalles de otras implementaciones necesarias para que éste funcione.
 	
 	\subsection{Algoritmo QR}
 	
-	\paragraph{} Sea $A \in \Re^{N \times N}$ la matriz cuyos autovalores quieren determinarse. Sea $A_{k}=:Q_{k}R_{k}$ la descomposición QR de la matriz $A_{k}$, donde $Q_{k}$ es ortogonal y $R_{k}$ es triangular superior. Entonces el algoritmo QR se define de la siguiente forma:
+	\paragraph{} Sea $A \in \mathbb{R}^{N \times N}$ la matriz cuyos autovalores quieren determinarse. Sea $A_{k}=:Q_{k}R_{k}$ la descomposición QR de la matriz $A_{k}$, donde $Q_{k}$ es ortogonal y $R_{k}$ es triangular superior. Entonces el algoritmo QR se define de la siguiente forma:
 	
 	\begin{align}
 		A_{0} &= A \\
@@ -48,7 +107,7 @@
 	
 	\paragraph{} Un aspecto interesante de dicha convergencia es que sucede de forma \textbf{ordenada}, i.e. primero converge el valor $A_{N,N}$, luego $A_{N-1,N-1}$ y así sucesivamente. Por ende, la primer optimización que puede realizarse es la siguiente: 
 	
-	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede afirmarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\Re^{j-1 \times j-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
+	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede afirmarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\mathbb{R}^{j-1 \times j-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
 	
 	\paragraph{} Otras posibles optimizaciones del algoritmo versan sobre el aceleramiento de su convergencia. Por ejemplo, es posible llevar la matriz $A_{0}$ a la forma de Hessemberg $H = Q^{T}A_{0}Q$, siendo $H$ una matriz con $0_{s}$ por debajo de la subdiagonal. Considerando que mediante el algoritmo QR se converge a una matriz triangular, establecer $A_{0} = H$ acelera la convergencia de los autovalores.
 	
@@ -65,13 +124,13 @@
 		Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} &= Q_{k}^{-1}Q_{k}R_{k}Q_{k}  \\ &= R_{k}Q_{k}
 	\end{align}
 	
-	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$:
+	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$ en $(7)$:
 	
 	\begin{align}
 		A_{k+1} &= Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} + \kappa_{k}I \\ &= Q_{k}^{-1}A_{k}Q_{k} - \kappa_{k}Q_{k}^{-1}Q_{k} + \kappa_{k}I  \\ &= Q_{k}^{-1}A_{k}Q_{k}  
 	\end{align}
 	
-	\paragraph{} Por lo que $A_{k+1} \sim A_{k+1}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas que aproximen dichos valores para cada iteración. Una heurística posible es la trivial: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
+	\paragraph{} Por lo que $A_{k+1} \sim A_{k}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas que aproximen dichos valores para cada iteración. Una heurística posible es la trivial: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
 	
 	\subsection{Reflectores de Householder}
 	
@@ -98,7 +157,7 @@
 	
 	\subsection{Descomposición QR}
 	
-	\paragraph{} Siendo $A$ una matriz cualquiera de $\Re^{N\times M}$, se busca una descomposición $A = QR$ tal que $Q$ sea ortogonal y $R$ triangular superior. Utilizando los reflectores de Householder, el interés es encontrar una matriz $P$ de la forma $P = I - 2vv^{T}$ tal que se cumpla para algún vector $x$:
+	\paragraph{} Siendo $A$ una matriz cualquiera de $\mathbb{R}^{N\times M}$, se busca una descomposición $A = QR$ tal que $Q$ sea ortogonal y $R$ triangular superior. Utilizando los reflectores de Householder, el interés es encontrar una matriz $P$ de la forma $P = I - 2vv^{T}$ tal que se cumpla para algún vector $x$:
 	
 	\begin{align}
 		Px = \alpha e_{1}
@@ -114,15 +173,64 @@
 	\end{align}
 	\paragraph{}Con $H$ ortogonal.
 	
-	\paragraph{} La idea, pues, es que los $x_{k:,k:}$ sean las columnas de la matriz $A$ a descomponer, con $ 0 \le k \le M-1$. 
+	\paragraph{} La idea, pues, es generar matrices $H_{i}$ ortogonales tales que $H_{1}A$ retorne una matriz $A_{1}$ con $0_{s}$ en la primera columna por debajo de la diagonal, $H_{2}A_{1}$ además agregue $0_{s}$ en la segunda columna por debajo de la diagonal, y así sucesivamente, hasta lograr un producto $H_{M-1}H_{M-2}\dots H_{1}A = R$, con $R$ triangular superior. Nótese que, como los $H_{i}$ son ortogonales, $H_{M-1}H_{M-2}\dots H_{1} = Q^{T}$ es ortogonal. Por ende, en este punto se ha logrado una descomposición QR de la matriz $A$.
+	
+	\paragraph{} Se ha probado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por fila en cada iteración.
+	
+	\begin{table}[h]
+		\centering
+		\label{my-label}
+		\begin{tabular}{@{}lll@{}}
+			\toprule
+			Dimensión & T. Givens & T. Householder \\ \midrule
+			50        & 0.044000  & 0.004000       \\
+			100       & 0.513000  & 0.014000       \\
+			150       & 2.673000  & 0.046000       \\
+			200       & 8.824000  & 0.148000       \\
+			250       & 26.306000 & 0.259000       \\
+			300       & 60.185000 & 0.485000       \\ \bottomrule
+		\end{tabular}
+		\caption{Comparación entre implementaciones de descomposición QR $($segundos$)$.}
+	\end{table}
+	
+	\paragraph{} En el cuadro 1 se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
 	
 	\subsection{Matriz de Hessemberg}
 	
+	\paragraph{} En la sección 1.1. se ha comentado acerca de los potenciales beneficios de transformar la matriz de entrada $A$ del algoritmo QR a una forma de Hessemberg superior, es decir con $0_{s}$ por debajo de la subdiagonal. A continuación, se abordarán los detalles de dicha transformación.
+	
+	\paragraph{} La reducción a una matriz de Hessemberg procede de manera similar a la descomposición QR por el método de Householder, con la diferencia que, en este caso, se busca generar una matriz $H \sim A$, donde $A \in \mathbb{R}^{N\times M}$ es la entrada del algoritmo. 
+	
+	\paragraph{} El objetivo es generar matrices de Householder $P_{i}$, con $ 1\le i \le M-2$, tal que $P_{1}A$ anule los elementos de la primera columna por debajo de la \textbf{subdiagonal}. Luego, como se busca generar una matriz similar a la entrada, se multiplica por derecha a este resultado por $P_{1}^{-1}$. Procediendo de esta forma hasta $i = M-2$ se obtiene $H = P_{M-2}\dots P_{1}AP_{1}^{-1}\dots P_{M-2}^{-1}$, con $H \sim A$. Un interesante ejemplo gráfico del procedimiento se puede observar en la referencia a continuación \cite{hess}. 
+	
+	\section{Resultados}
+	
+	\subsection{PCA}
+	
+	\subsection{Kernel-PCA}
+	
 	\begin{thebibliography}{9}
 	
+		\bibitem{PCA}
+		International Journal of Emerging Technology and Advanced Engineering, Face 
+		Recognition Using Eigenfaces, Rajib Saha, Debotosh Bhattacharjee,
+		\url{http://www.ijetae.com/files/Volume3Issue5/IJETAE_0513_14.pdf}
+		
+		\bibitem{dbf}
+		Cambridge University Computer Laboratory, The Database of Faces,
+		\url{http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html}
+	
 		\bibitem{l9}
-		University of Southern Mississippi,
+		University of Southern Mississippi, QR Factorization,
 		\url{http://www.math.usm.edu/lambers/mat610/sum10/lecture9.pdf}
+		
+		\bibitem{hess}
+		Technische Universität Berlin, Hessemberg matrix visualization,
+		\url{http://www3.math.tu-berlin.de/Vorlesungen/SS11/NumMath2/Materials/hessenberg_eng.pdf}
+		
+		\bibitem{qr}
+		ETH Zurich, QR Algoritm,
+		\url{http://people.inf.ethz.ch/arbenz/ewp/Lnotes/chapter4.pdf}
 	
 	\end{thebibliography}
 	
