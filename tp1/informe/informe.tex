@@ -1,0 +1,129 @@
+\documentclass[12pt, twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{a4paper,margin=0.8in}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{chngcntr}
+\counterwithin*{equation}{subsection}
+
+\begin{document}
+	\title{Reconocimiento de caras con PCA y KPCA}
+	\author{Pedro BALAGUER \\ Julián BENÍTEZ \\ Mariano GARRIGÓ \\ Matías PERAZZO \\ M. Alejo SAQUÉS}
+	\date{}
+	\maketitle
+	
+	\begin{abstract}
+		
+		
+	\end{abstract}
+	
+	\paragraph{Palabras clave:} Descomposición QR, Transformación de Householder, Matriz de Hessemberg, Algoritmo QR, Corrimiento de Wilkinson, Matriz de Covarianza, \textit{Principal Component Analysis}, \textit{Kernel}, \textit{Support Vector Machines}.
+	
+	\section{Algoritmos de soporte}
+	
+	\paragraph{} A los efectos de implementar la metodología expuesta, es preciso contar con un método para el cálculo de los autovalores y autovectores de una matriz. A continuación, se expondrán los detalles de dicho algoritmo, el \textbf{algoritmo QR}, como así también los detalles de otras implementaciones necesarias para que éste funcione.
+	
+	\subsection{Algoritmo QR}
+	
+	\paragraph{} Sea $A \in \Re^{N \times N}$ la matriz cuyos autovalores quieren determinarse. Sea $A_{k}=:Q_{k}R_{k}$ la descomposición QR de la matriz $A_{k}$, donde $Q_{k}$ es ortogonal y $R_{k}$ es triangular superior. Entonces el algoritmo QR se define de la siguiente forma:
+	
+	\begin{align}
+		A_{0} &= A \\
+		A_{k+1} &= R_{k}Q_{k}
+	\end{align}
+	
+	\paragraph{} Nótese que, como los $Q_{k}$ son ortogonales, se cumple la siguiente igualdad:
+	
+	\begin{align}
+		A_{k+1} &= R_{k}Q_{k}  \\ &= Q^{-1}_{k}Q_{k}R_{k}Q_{k} \\ &= Q^{-1}_{k}A_{k}Q_{k}
+	\end{align}
+	
+	\paragraph{} Por ende, los $A_{k}$ son similares entre sí $\forall k\ge0$.
+	
+	\paragraph{} Siguiendo este procedimiento, para $k\to\inf$, la matriz $A_{k}$ converge a una forma triangular, lo que implica que sus autovalores se encuentran sobre la diagonal.
+	
+	\paragraph{} Un aspecto interesante de dicha convergencia es que sucede de forma \textbf{ordenada}, i.e. primero converge el valor $A_{N,N}$, luego $A_{N-1,N-1}$ y así sucesivamente. Por ende, la primer optimización que puede realizarse es la siguiente: 
+	
+	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede afirmarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\Re^{j-1 \times j-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
+	
+	\paragraph{} Otras posibles optimizaciones del algoritmo versan sobre el aceleramiento de su convergencia. Por ejemplo, es posible llevar la matriz $A_{0}$ a la forma de Hessemberg $H = Q^{T}A_{0}Q$, siendo $H$ una matriz con $0_{s}$ por debajo de la subdiagonal. Considerando que mediante el algoritmo QR se converge a una matriz triangular, establecer $A_{0} = H$ acelera la convergencia de los autovalores.
+	
+	\paragraph{} Por último, a los efectos de acelerar la convergencia, se pueden introducir corrimientos o \textit{shifts} $\kappa_{k}$ en cada iteración, de la siguiente forma:
+	
+	\begin{align}
+		A_{k} - \kappa_{k}I &=: Q_{k}R_{k} \\
+		A_{k+1} &= R_{k}Q_{k} + \kappa_{k}I 
+	\end{align}
+	
+	\paragraph{} Introduciendo los corrimientos, se preserva la similaridad entre todos los $A_{k}$. Por un lado, tenemos que:
+	
+	\begin{align}
+		Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} &= Q_{k}^{-1}Q_{k}R_{k}Q_{k}  \\ &= R_{k}Q_{k}
+	\end{align}
+	
+	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$:
+	
+	\begin{align}
+		A_{k+1} &= Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} + \kappa_{k}I \\ &= Q_{k}^{-1}A_{k}Q_{k} - \kappa_{k}Q_{k}^{-1}Q_{k} + \kappa_{k}I  \\ &= Q_{k}^{-1}A_{k}Q_{k}  
+	\end{align}
+	
+	\paragraph{} Por lo que $A_{k+1} \sim A_{k+1}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas que aproximen dichos valores para cada iteración. Una heurística posible es la trivial: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
+	
+	\subsection{Reflectores de Householder}
+	
+	\paragraph{} Tal como se ha mencionado en el caso de la matriz de Hessemberg, uno de los intereses que se tiene a menudo es la introducción de $0_{s}$ por debajo de la subdiagonal. Unas de las herramientas utilizadas para dicha caso, como así también para la descomposición QR de una matriz, son los reflectores de Householder.
+	
+	\paragraph{} Considérese la siguiente matriz simétrica $P = I - \mu vv^{T}$. El objetivo es encontrar un $\mu$ tal que $P$ sea, además, ortogonal. Para ello, debe cumplirse la igualdad $P^{T}P = I$ \cite{l9}.
+	
+	
+	\begin{align}
+		P^{T}P &= I = (I - \mu vv^{T})^{T}(I - \mu vv^{T}) \\
+		 &= I - 2\mu vv^{T} + \mu^{2}vv^{T}vv^{T} \\
+		 &= I - 2\mu vv^{T} + \mu^{2}(v^{T}v)vv^{T} \\
+		 &= I + \mu(\mu v^{T}v - 2)vv^{T} \\
+		0 &= \mu v^{T}v - 2 \\
+		\mu &= \frac{2}{v^{T}v}
+	\end{align}
+	
+	\paragraph{} Luego, sin perder generalidad, puede fijarse $v^{T}v = \lVert v \rVert _{2}^{2} = 1$, quedando la forma tradicional del reflector de Householder:
+	
+	\begin{align}
+		P = I - 2vv^{T}
+	\end{align}
+	\paragraph{}Con $\lVert v \rVert _{2}^{2} = 1$.
+	
+	\subsection{Descomposición QR}
+	
+	\paragraph{} Siendo $A$ una matriz cualquiera de $\Re^{N\times M}$, se busca una descomposición $A = QR$ tal que $Q$ sea ortogonal y $R$ triangular superior. Utilizando los reflectores de Householder, el interés es encontrar una matriz $P$ de la forma $P = I - 2vv^{T}$ tal que se cumpla para algún vector $x$:
+	
+	\begin{align}
+		Px = \alpha e_{1}
+	\end{align}
+	\paragraph{}Con $e1 = \left[1\quad0\quad\dots\quad0\right]^{T}$.
+	
+	\paragraph{} Aplicando esta limitación y la definición del reflector, se puede llegar a que:
+	
+	\begin{align}
+		v &= x + \lVert x \rVert _{2}e_{1} \\
+		c &= \frac{2}{\lVert v \rVert _{2}^{2}} \\
+		H &= I - cvv^{T}
+	\end{align}
+	\paragraph{}Con $H$ ortogonal.
+	
+	\paragraph{} La idea, pues, es que los $x_{k:,k:}$ sean las columnas de la matriz $A$ a descomponer, con $ 0 \le k \le M-1$. 
+	
+	\subsection{Matriz de Hessemberg}
+	
+	\begin{thebibliography}{9}
+	
+		\bibitem{l9}
+		University of Southern Mississippi,
+		\url{http://www.math.usm.edu/lambers/mat610/sum10/lecture9.pdf}
+	
+	\end{thebibliography}
+	
+\end{document}

@@ -1,3 +1,7 @@
 .idea
 *.pyc
 faces_full/
+*.aux
+*.log
+*.pdf
+*.gz

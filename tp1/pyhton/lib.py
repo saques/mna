@@ -1,11 +1,12 @@
 import time
 from math import *
+from scipy.linalg import hessenberg as hess
 import numpy as np
 import cv2
 
 
 NUM_INDIVIDUALS = 16
-TOLERANCE = 1E-5
+TOLERANCE = 1E-4
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -13,7 +14,7 @@ TOLERANCE = 1E-5
 def load_images(i):
     database = []
     for path in xrange(0, NUM_INDIVIDUALS):
-        im = cv2.imread("../faces_full/s%d/%d.pgm" % (path+1, i), flags=cv2.IMREAD_GRAYSCALE)
+        im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, i), flags=cv2.IMREAD_GRAYSCALE)
         database.append(np.ravel(im))
     return np.stack(database)
 
@@ -22,7 +23,7 @@ def load_images_2(i):
     database = []
     for path in xrange(0, NUM_INDIVIDUALS):
         for x in xrange(0,i):
-            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1,x+1), flags=cv2.IMREAD_GRAYSCALE)
+            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, x+1), flags=cv2.IMREAD_GRAYSCALE)
             database.append(np.ravel(im))
     return np.stack(database)
 
@@ -39,6 +40,24 @@ def load_images_and_get_class(i):
     return (np.stack(database), classes)
 
 
+def load_images_3(i, j):
+    database = []
+    for path in xrange(0, j):
+        for x in xrange(0,i):
+            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, x+1), flags=cv2.IMREAD_GRAYSCALE)
+            database.append(np.ravel(im))
+    return np.stack(database)
+
+
+def load_images_4(i, j):
+    database = []
+    for path in xrange(0, j):
+        im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, i), flags=cv2.IMREAD_GRAYSCALE)
+        database.append(np.ravel(im))
+    return np.stack(database)
+
+
+
 # Returns a vector with Vi = weight of the i-th
 # eigenface relative to the face passed as parameter
 def calculate_omega(eigfaces, face):
@@ -52,7 +71,7 @@ def calculate_omega(eigfaces, face):
 def normalize_matrix(m):
     ans = []
     for p in range(0, m.shape[0]):
-        ans.append(m[p] / np.linalg.norm(m[p]))
+        ans.append(m[p, :] / np.linalg.norm(m[p, :]))
     ans = np.stack(ans)
     return ans
 
@@ -63,12 +82,10 @@ def wilkinson(a, b, c):
 
 
 def eig(a):
-    x = a
-    values = []
-    vectors = []
-
+    p, x = hessemberg(a)
     d = dim = x.shape[0]
-
+    values = []
+    vectors = np.eye(d)
     for i in range(0, d):
         identity = np.eye(dim)
         prev = None
@@ -76,15 +93,17 @@ def eig(a):
         while prev is None or np.abs(prev-x[dim-1, dim-1]) > TOLERANCE:
             prev = x[dim-1, dim-1]
             mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
-            q, r = np.linalg.qr(x - np.dot(mu, identity))
-            x = np.dot(r, q) + mu*identity
+            q, r = qr_householder(x[0:dim, 0:dim] - np.dot(mu, identity))
+
+            qi = np.eye(d)
+            qi[0:dim, 0:dim] = q
+            vectors = np.dot(vectors, qi)
+
+            x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
 
         values.append(x[dim-1, dim-1])
-        vectors.append(np.transpose(x[:, -1]))
-        x = x[0:dim-1, 0:dim-1]
         dim -= 1
-
-    return values
+    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), vectors
 
 
 def givens_rotation(a, b):
@@ -197,4 +216,18 @@ def print_images(mats, name='image', time=1000):
 
 
 
-# x = np.array([[1, 2, 8],[5, 9, 3], [8, 55, 4]])
+def eigenmatrix(dim):
+    i = np.eye(dim)
+    for x in range(0, dim):
+        i[x, x] = x+1
+    r = np.random.rand(dim, dim)
+    return np.dot(r, np.dot(i, np.linalg.inv(r)))
+
+# A = eigenmatrix(10)
+#
+# values, vectors = eig(A)
+#
+# print values
+#
+# print vectors[:, 0]
+# print np.dot(A, vectors[:, 0])
