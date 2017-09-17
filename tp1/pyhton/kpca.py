@@ -1,7 +1,6 @@
 from lib import *
 import numpy as np
 import cv2
-import os.path
 from sklearn.decomposition import KernelPCA
 from sklearn import svm
 
@@ -12,10 +11,11 @@ Facial Recognition using KPCA
 # Constants
 IMG_HEIGHT = 112
 IMG_WIDTH = 92
+areasize = IMG_HEIGHT * IMG_WIDTH
 
 personsno = NUM_INDIVIDUALS
-tstperper = 8
-trnperper = 2
+tstperper = 7
+trnperper = 6
 tstno = tstperper * personsno
 trnno = trnperper * personsno
 
@@ -23,8 +23,12 @@ trnno = trnperper * personsno
 db, classes = load_images_and_get_class(trnperper)
 tstdb, tstclasses = load_images_and_get_class(tstperper)
 
+# Make every pixel have a value between -1 and 1
+db = np.divide(np.add(db,-127.5),127.5)
+tstdb = np.divide(np.add(tstdb,-127.5),127.5)
+
 # Polynomial kernel
-degree = 2
+degree = 5
 K = (np.dot(db, db.T) / trnno + 1) ** degree
 oneM = np.ones([trnno, trnno]) / trnno
 K = K - np.dot(oneM, K) - np.dot(K, oneM) + np.dot(oneM, np.dot(K, oneM))
