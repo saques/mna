@@ -1,0 +1,75 @@
+\documentclass[12pt, twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{a4paper,margin=0.8in}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{graphicx}
+
+\begin{document}
+	\title{Reconocimiento de caras con PCA y KPCA}
+	\author{Pedro BALAGUER \\ Julián BENÍTEZ \\ Mariano GARRIGÓ \\ Matías PERAZZO \\ M. Alejo SAQUÉS}
+	\date{}
+	\maketitle
+	
+	\begin{abstract}
+		
+		
+	\end{abstract}
+	
+	\paragraph{Palabras clave:} Descomposición QR, Transformación de Householder, Matriz de Hessemberg, Algoritmo QR, Corrimiento de Wilkinson, Matriz de Covarianza, \textit{Principal Component Analysis}, \textit{Kernel}, \textit{Support Vector Machines}.
+	
+	\section{Algoritmos de soporte}
+	
+	\paragraph{} A los efectos de implementar la metodología expuesta, es preciso contar con un método para el cálculo de los autovalores y autovectores de una matriz. A continuación, se expondrán los detalles de dicho algoritmo, el \textbf{algoritmo QR}, como así también los detalles de otras implementaciones necesarias para que éste funcione.
+	
+	\subsection{Algoritmo QR}
+	
+	\paragraph{} Sea $A \in \Re^{NxN}$ la matriz cuyos autovalores quieren determinarse. Sea $A_{k}=Q_{k}R_{k}$ la descomposición QR de la matriz $A_{k}$, donde $Q_{k}$ es ortogonal y $R_{k}$ es triangular superior. Entonces el algoritmo QR se define de la siguiente forma:
+	
+	\begin{center}
+		$A_{0} = A$ \\
+		$A_{k+1} = R_{k}Q_{k}$
+	\end{center}
+	
+	\paragraph{} Nótese que, como los $Q_{k}$ son ortogonales, se cumple la siguiente igualdad:
+	
+	\begin{center}
+		$A_{k+1} = R_{k}Q_{k} = Q^{-1}_{k}Q_{k}R_{k}Q_{k} = Q^{-1}_{k}A_{k}Q_{k}$
+	\end{center}
+	
+	\paragraph{} Por ende, los $A_{k}$ son similares entre sí $\forall k\ge0$.
+	
+	\paragraph{} Siguiendo este procedimiento, para $k\to\inf$, la matriz $A_{k}$ converge a una forma triangular, lo que implica que sus autovalores se encuentran sobre la diagonal.
+	
+	\paragraph{} Un aspecto interesante de dicha convergencia es que sucede de forma \textbf{ordenada}, i.e. primero converge el valor $A_{N,N}$, luego $A_{N-1,N-1}$ y así sucesivamente. Por ende, la primer optimización que puede realizarse es la siguiente: 
+	
+	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede afirmarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\Re^{j-1xj-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
+	
+	\paragraph{} Otras posibles optimizaciones del algoritmo versan sobre el aceleramiento de su convergencia. Por ejemplo, es posible llevar la matriz $A_{0}$ a la forma de Hessemberg $H = Q^{T}A_{0}Q$, siendo $H$ una matriz con $0_{s}$ por debajo de la subdiagonal. Considerando que mediante el algoritmo QR se converge a una matriz triangular, establecer $A_{0} = H$ acelera la convergencia de los autovalores.
+	
+	\paragraph{} Por último, a los efectos de acelerar la convergencia, se pueden introducir corrimientos o \textit{shifts} $\kappa_{k}$ en cada iteración, de la siguiente forma:
+	
+	\begin{center}
+		$A_{k} - \kappa_{k}I = Q_{k}R_{k}$ \\
+		$A_{k+1} = R_{k}Q_{k} + \kappa_{k}I$ 
+	\end{center}
+	
+	\paragraph{} Introduciendo los corrimientos, se preserva la similaridad entre todos los $A_{k}$. Por un lado, tenemos que:
+	
+	\begin{center}
+		$Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} = Q_{k}^{-1}Q_{k}R_{k}Q_{k} = R_{k}Q_{k}$
+	\end{center}
+	
+	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$:
+	
+	\begin{center}
+		$A_{k+1} = Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} + \kappa_{k}I = Q_{k}^{-1}A_{k}Q_{k} - \kappa_{k}Q_{k}^{-1}Q_{k} + \kappa_{k}I = Q_{k}^{-1}A_{k}Q_{k} $ 
+	\end{center}
+	
+	\paragraph{} Por lo que $A_{k+1} \sim A_{k+1}$. 
+	
+	
+	
+\end{document}
