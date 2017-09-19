@@ -14,8 +14,8 @@ IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
 personsno = NUM_INDIVIDUALS
-tstperper = 7
-trnperper = 6
+tstperper = 10
+trnperper = 2
 tstno = tstperper * personsno
 trnno = trnperper * personsno
 
@@ -28,7 +28,7 @@ db = np.divide(np.add(db,-127.5),127.5)
 tstdb = np.divide(np.add(tstdb,-127.5),127.5)
 
 # Polynomial kernel
-degree = 5
+degree = 2
 K = (np.dot(db, db.T) / trnno + 1) ** degree
 oneM = np.ones([trnno, trnno]) / trnno
 K = K - np.dot(oneM, K) - np.dot(K, oneM) + np.dot(oneM, np.dot(K, oneM))
@@ -60,7 +60,6 @@ print clf.score(imtstproypre,tstclasses.ravel()) * 100
 
 
 # Cheating with already implemented KPCA
-kpca = KernelPCA(n_components=None, kernel='poly', degree=1, gamma = 1, coef0 = 0)
 kpca = KernelPCA(n_components = None, kernel='poly', degree=2)
 kpca.fit(db)
 
@@ -71,3 +70,20 @@ imtstproypre2 = kpca.transform(tstdb)
 clf = svm.LinearSVC()   # sklearn KCPA implementation
 clf.fit(improypre2,classes.ravel())
 print clf.score(imtstproypre2,tstclasses.ravel()) * 100
+
+
+
+# nmax = db.shape[1]
+# accs = np.zeros([nmax, 1])
+# for neigen in range(1, nmax):
+#     # Me quedo solo con las primeras autocaras
+#     # proyecto
+#     improy = improypre[:, 0:neigen]
+#     imtstproy = imtstproypre[:, 0:neigen]
+#
+#     # SVM
+#     # entreno
+#     clf = svm.LinearSVC()
+#     clf.fit(improy,classes.ravel())
+#     accs[neigen] = clf.score(imtstproy,tstclasses.ravel())
+#     print('Precision con {0} autocaras: {1} %\n'.format(neigen, accs[neigen] * 100))

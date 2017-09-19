@@ -6,7 +6,7 @@ import cv2
 
 
 NUM_INDIVIDUALS = 40
-TOLERANCE = 1E-4
+TOLERANCE = 1E-6
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -186,7 +186,7 @@ def hessemberg(a):
 
 def print_image(mat, name='image', time=1000):
     """
-    Shows an image in a separate windows
+    Shows an image in a separate window
 
     :param mat: Matrix where the image is stored.
                 Its values must be between 0 and 255.

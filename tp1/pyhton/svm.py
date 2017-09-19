@@ -45,7 +45,6 @@ NUM_INDIVIDUALS = 30
 # Loading raw data and preliminary processing
 db = load_images_3(imgperper, NUM_INDIVIDUALS)
 
-
 mean = np.int_(db.mean(0))
 dbc = db - mean
 
@@ -57,9 +56,8 @@ np.flip(ps_eigenvals, 0)
 np.flip(ps_eigenvecs, 0)
 
 # Calculating eigenfaces (returning to R^(h*v)
-for x in range(0, ps_eigenvecs.shape[0]):
-    eigenfaces.append(np.dot(dbc.transpose(), ps_eigenvecs[x]))
-eigenfaces = np.stack(eigenfaces)
+eigenfaces = np.dot(dbc.T, ps_eigenvecs.T).T
+print eigenfaces[0,0]
 
 eigenfaces = normalize_matrix(eigenfaces)
 
@@ -114,7 +112,6 @@ for j in xrange(0, NUM_INDIVIDUALS):
 #         classes.append(i)
 
 classes = np.stack(classes)
-
 
 #Building test set
 db_test = load_images(PICTURE)
