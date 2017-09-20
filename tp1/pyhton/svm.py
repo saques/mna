@@ -46,7 +46,6 @@ NUM_INDIVIDUALS = 30
 # Loading raw data and preliminary processing
 db = load_images_3(imgperper, NUM_INDIVIDUALS)
 
-
 mean = np.int_(db.mean(0))
 dbc = db - mean
 
@@ -68,6 +67,7 @@ for x in ps_indexorder:
 for x in range(0, ps_sortedevectors.shape[0]):
     eigenfaces.append(np.dot(dbc.transpose(), ps_sortedevectors[x]))
 eigenfaces = np.stack(eigenfaces)
+
 
 eigenfaces = normalize_matrix(eigenfaces)
 
@@ -122,7 +122,6 @@ for j in xrange(0, NUM_INDIVIDUALS):
 #         classes.append(i)
 
 classes = np.stack(classes)
-
 
 #Building test set
 db_test = load_images(PICTURE)

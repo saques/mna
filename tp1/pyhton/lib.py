@@ -1,11 +1,12 @@
 import time
 from math import *
+from scipy.linalg import hessenberg as hess
 import numpy as np
 import cv2
 
 
-NUM_INDIVIDUALS = 40
-TOLERANCE = 1E-5
+NUM_INDIVIDUALS = 5
+TOLERANCE = 1E-6
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -25,6 +26,18 @@ def load_images_2(i):
             im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, x+1), flags=cv2.IMREAD_GRAYSCALE)
             database.append(np.ravel(im))
     return np.stack(database)
+
+def load_images_and_get_class(i):
+    database = []
+    classes = np.zeros([NUM_INDIVIDUALS * i])
+    imno = 0
+    for path in xrange(0, NUM_INDIVIDUALS):
+        for idx,x in enumerate(xrange(0,i)):
+            im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1,x+1), flags=cv2.IMREAD_GRAYSCALE)
+            database.append(np.ravel(im))
+            classes[imno] = path
+            imno += 1
+    return (np.stack(database), classes)
 
 
 def load_images_3(i, j):
@@ -68,29 +81,43 @@ def wilkinson(a, b, c):
     return c - np.sign(delta)*b**2/(np.abs(delta)+np.sqrt(delta**2 + b**2))
 
 
+def eigh(a):
+    L, V = eig(a)
+    print L
+    print V
+    ps_indexorder = np.argsort(L)
+
+    sortedV = np.eye(V.shape[0])
+    sortedL = np.zeros(V.shape[0])
+    for i,x in enumerate(ps_indexorder):
+        sortedV[:, i] = V[:,x]
+        sortedL[i] = L[x]
+
+    return sortedL, sortedV
+
 def eig(a):
-    x = a
-    values = []
-    vectors = []
-
+    p, x = hessemberg(a)
     d = dim = x.shape[0]
-
+    values = []
+    vectors = np.eye(d)
     for i in range(0, d):
         identity = np.eye(dim)
         prev = None
 
         while prev is None or np.abs(prev-x[dim-1, dim-1]) > TOLERANCE:
             prev = x[dim-1, dim-1]
-            mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
-            q, r = np.linalg.qr(x - np.dot(mu, identity))
-            x = np.dot(r, q) + mu*identity
+#            mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
+            mu = prev
+            q, r = qr_householder(x[0:dim, 0:dim] - np.dot(mu, identity))
 
+            qi = np.eye(d)
+            qi[0:dim, 0:dim] = q
+            vectors = np.dot(vectors, qi)
+
+            x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
         values.append(x[dim-1, dim-1])
-        vectors.append(np.transpose(x[:, -1]))
-        x = x[0:dim-1, 0:dim-1]
         dim -= 1
-
-    return values
+    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), np.dot(p, vectors)
 
 
 def givens_rotation(a, b):
@@ -166,10 +193,46 @@ def hessemberg(a):
         vh = ov_householder(R[i+1:, i]).reshape((m-i-1, 1))
         H = np.eye(m)
         H[i+1:, i+1:] -= 2.0 * np.dot(vh, vh.transpose())
-        P = np.dot(H, P)
+        P = np.dot(P, H)
         R = np.dot(H, R)
         R = np.dot(R, H.transpose())
     return P, R
 
 
-# x = np.array([[1, 2, 8],[5, 9, 3], [8, 55, 4]])
+def print_image(mat, name='image', time=1000):
+    """
+    Shows an image in a separate window
+
+    :param mat: Matrix where the image is stored.
+                Its values must be between 0 and 255.
+    :param name: Name of the image's window.
+    :param time: Time the images will be display (0 is no limit).
+    """
+
+    cv2.imshow(name, mat / 255.)
+    cv2.waitKey(time)
+    cv2.destroyAllWindows()
+
+def print_images(mats, name='image', time=1000):
+    """
+    Shows images in a separate windows
+
+    :param mats: Matrices where the images are stored.
+                 Its values must be between 0 and 255.
+    :param name: Name of the image's window.
+    :param time: Time the images will be display (0 is no limit).
+    """
+
+    for index, m in enumerate(mats):
+        cv2.imshow(name + str(index), m / 255.)
+
+    cv2.waitKey(time)
+    cv2.destroyAllWindows()
+
+
+def eigenmatrix(dim):
+    i = np.eye(dim)
+    for x in range(0, dim):
+        i[x, x] = x+1
+    r = np.random.rand(dim, dim)
+    return np.dot(r, np.dot(i, np.linalg.inv(r)))
