@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 
-NUM_INDIVIDUALS = 40
+NUM_INDIVIDUALS = 6
 TOLERANCE = 1E-6
 
 
@@ -100,10 +100,9 @@ def eig(a):
             vectors = np.dot(vectors, qi)
 
             x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
-
         values.append(x[dim-1, dim-1])
         dim -= 1
-    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), vectors
+    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), np.dot(p, vectors)
 
 
 def givens_rotation(a, b):
@@ -179,10 +178,11 @@ def hessemberg(a):
         vh = ov_householder(R[i+1:, i]).reshape((m-i-1, 1))
         H = np.eye(m)
         H[i+1:, i+1:] -= 2.0 * np.dot(vh, vh.transpose())
-        P = np.dot(H, P)
+        P = np.dot(P, H)
         R = np.dot(H, R)
         R = np.dot(R, H.transpose())
     return P, R
+
 
 def print_image(mat, name='image', time=1000):
     """
