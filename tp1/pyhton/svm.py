@@ -59,7 +59,7 @@ def universe(PICTURE, imgperper, NUM_INDIVIDUALS):
 
     # PseudoCovariance matrix
     pseudo = np.dot(dbc, dbc.transpose())
-    ps_eigenvals, ps_eigenvecs = np.linalg.eig(pseudo)
+    ps_eigenvals, ps_eigenvecs = eig(pseudo)
 
     ps_eigenvals = np.absolute(ps_eigenvals)
 

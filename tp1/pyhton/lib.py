@@ -4,7 +4,7 @@ from scipy.linalg import hessenberg as hess
 import numpy as np
 import cv2
 
-TOLERANCE = 1E-6
+TOLERANCE = 1E-30
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
@@ -232,18 +232,3 @@ def eigenmatrix(dim):
         i[x, x] = x+1
     r = np.random.rand(dim, dim)
     return np.dot(r, np.dot(i, np.linalg.inv(r)))
-
-
-A = eigenmatrix(5)
-
-A = np.dot(A,A.T)
-
-l, v = eigh(A)
-
-l1, v1 = np.linalg.eigh(A)
-
-print l
-print v
-
-print l1
-print v1

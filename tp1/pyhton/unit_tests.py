@@ -35,8 +35,8 @@ class LibTest(unittest.TestCase):
         rand = gen_rand_fixed_square_matrix(3)
         A = rand + rand.T
 
-        L1, V1 = np.linalg.eig(A)
-        L2, V2 = eig(A)
+        L1, V1 = np.linalg.eigh(A)
+        L2, V2 = eigh(A)
 
         print L1
         print V1
