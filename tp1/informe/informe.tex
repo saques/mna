@@ -10,6 +10,9 @@
 \usepackage{booktabs}
 \usepackage{chngcntr}
 \usepackage{amsfonts}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\cfoot{Página \thepage}
 \counterwithin*{equation}{subsection}
 
 \begin{document}
@@ -95,7 +98,7 @@
 	
 	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
 	
-	\paragraph{} Existe otra técnica para realizar el último cálculo, por medio del uso de \textit{Support Vector Machines}. En la implementación realizada, se ha utilizado la librería \verb|Sklearn| para dicho propósito. Su implementación de SVM espera, para el \textit{set} de entrenamiento, un arreglo de vectores que hagan las veces de los \textit{individuos}, y arreglo de enteros que especifique a que clase pertenece cada uno de ellos. En este caso, el primer arreglo contendrá los $\Omega_{M_{p}}$. La entrada del método \verb|predict| será el $\Omega_{Z}$ a clasificar. 
+	\paragraph{} Existe otra técnica para realizar el último cálculo, por medio del uso de \textit{Support Vector Machines}. En la implementación realizada, se ha utilizado la librería \verb|Sklearn| para dicho propósito. Su implementación de SVM espera, para el \textit{set} de entrenamiento, un arreglo de vectores que hagan las veces de los \textit{individuos}, y un arreglo de enteros que especifique a que clase pertenece cada uno de ellos. En este caso, el primer arreglo contendrá los $\Omega_{M_{p}}$. La entrada del método \verb|predict| será el $\Omega_{Z}$ a clasificar. 
 	
 	\subsection{Kernel-PCA}
 	
@@ -125,9 +128,9 @@
 	
 	\paragraph{} Un aspecto interesante de dicha convergencia es que sucede de forma \textbf{ordenada}, i.e. primero converge el valor $A_{N,N}$, luego $A_{N-1,N-1}$ y así sucesivamente. Por ende, la primer optimización que puede realizarse es la siguiente: 
 	
-	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede afirmarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\mathbb{R}^{j-1 \times j-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
+	\paragraph{} Sea $i$ la i-ésima iteración del algoritmo. Luego, si $|A_{i+1_{j,j}} -A_{i_{j,j}}| \le \epsilon$ con $\epsilon \to 0$, entonces puede estimarse que el autovalor $A_{j,j}$ ha convergido. Luego, la fila y la columna j-ésimas pueden descartarse en las sucesivas iteraciones, para proceder el algoritmo con una matriz en $\mathbb{R}^{j-1 \times j-1}$. De esta forma, la complejidad computacional del algoritmo se ve reducida.
 	
-	\paragraph{} Otras posibles optimizaciones del algoritmo versan sobre el aceleramiento de su convergencia. Por ejemplo, es posible llevar la matriz $A_{0}$ a la forma de Hessemberg $H = Q^{T}A_{0}Q$, siendo $H$ una matriz con $0_{s}$ por debajo de la subdiagonal. Considerando que mediante el algoritmo QR se converge a una matriz triangular, establecer $A_{0} = H$ acelera la convergencia de los autovalores.
+	\paragraph{} Otras posibles optimizaciones del algoritmo versan sobre el aceleramiento de su convergencia. Por ejemplo, es posible llevar la matriz $A_{0}$ a la forma de Hessemberg $H = Q^{-1}A_{0}Q$, siendo $H$ una matriz con $0_{s}$ por debajo de la subdiagonal. Considerando que mediante el algoritmo QR se converge a una matriz triangular, establecer $A_{0} = H$ acelera la convergencia de los autovalores.
 	
 	\paragraph{} Por último, a los efectos de acelerar la convergencia, se pueden introducir corrimientos o \textit{shifts} $\kappa_{k}$ en cada iteración, de la siguiente forma:
 	
@@ -148,7 +151,31 @@
 		A_{k+1} &= Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} + \kappa_{k}I \\ &= Q_{k}^{-1}A_{k}Q_{k} - \kappa_{k}Q_{k}^{-1}Q_{k} + \kappa_{k}I  \\ &= Q_{k}^{-1}A_{k}Q_{k}  
 	\end{align}
 	
-	\paragraph{} Por lo que $A_{k+1} \sim A_{k}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas que aproximen dichos valores para cada iteración. Una heurística posible es la trivial: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
+	\paragraph{} Por lo que $A_{k+1} \sim A_{k}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas para aproximar dichos valores en cada iteración. Una heurística posible es la \textit{trivial}: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
+	
+	\paragraph{} Para evaluar el comportamiento del algoritmo frente a diferentes tipos de corrimiento, se han tomado mediciones del tiempo de ejecución del algoritmo QR utilizando diferentes heurísticas para los \textit{shifts}. Para cada una de las dimensiones del cuadro siguiente, se han generado matrices aleatorias cuyos autovalores $-$ por medio de una transformación de similaridad $-$ sean exactamente los de $ \Lambda = \left[1\quad\dots\quad dim\right]$. En el cuadro siguiente se exhiben los resultados obtenidos.
+	\begin{table}[h]
+		\centering
+		\label{my-label}
+		\begin{tabular}{@{}llll@{}}
+			\toprule
+			Dim. & Sin \textit{shifts} & Wilkinson & \textit{Trivial}  \\ \midrule
+			10   & 0.022000           & 0.013000  & 0.007000 \\
+			20   & 0.093000           & 1.154000  & 0.027000 \\
+			30   & 0.212000           & 0.370000  & 0.071000 \\
+			40   & 0.466000           & 0.262000  & 0.153000 \\
+			50   & 0.859000           & 0.879000  & 0.260000 \\
+			60   & 1.495000           & 0.569000  & 0.385000 \\
+			70   & 2.061000           & 0.844000  & 0.627000 \\
+			80   & 3.141000           & 4.478000  & 0.904000 \\
+			90   & 4.212000           & 2.257000  & 1.543000 \\ \bottomrule
+		\end{tabular}
+		\caption{Comparación en tiempo de ejecución entre diferentes tipos de \textit{shifts}.}
+	\end{table}
+	
+	\paragraph{} Contrariamente a lo que pudo haberse esperado, los corrimientos de Wilkinson implementados no solo demostraron no ser universalmente superiores a los corrimientos \textit{triviales}, sino que en algunos casos tuvieron una \textit{performance} incluso inferior al del algoritmo sin ningún tipo de corrimiento. Uno de los posibles motivos de este resultado podría estar relacionado a que el cómputo de los corrimientos de Wilkinson conlleva una serie de operaciones de punto flotante, tales como raíces cuadradas y divisiones. Por el contrario, los corrimientos \textit{triviales} son de cálculo inmediato.
+	
+	\paragraph{} Considerando los resultados expuestos, se optó finalmente por utilizar los \textit{shifts} \textit{triviales}.
 	
 	\subsection{Reflectores de Householder}
 	
@@ -158,7 +185,7 @@
 	
 	
 	\begin{align}
-		P^{T}P &= I = (I - \mu vv^{T})^{T}(I - \mu vv^{T}) \\
+		P^{T}P = I &= (I - \mu vv^{T})^{T}(I - \mu vv^{T}) \\
 		 &= I - 2\mu vv^{T} + \mu^{2}vv^{T}vv^{T} \\
 		 &= I - 2\mu vv^{T} + \mu^{2}(v^{T}v)vv^{T} \\
 		 &= I + \mu(\mu v^{T}v - 2)vv^{T} \\
@@ -203,16 +230,16 @@
 	
 	\paragraph{} Con $1 \le i \le M-1$. La matriz $\widetilde{H}_{i}$ cumple la condición $\widetilde{H}_{i}A_{i-1_{i:,i:}} = \alpha e_{1}$, con indexación al estilo de \textsc{Matlab}. Recuérdese que $A_{0} = A$, la matriz de entrada del algoritmo.
 	
-	\paragraph{} Nótese que, como los $\widetilde{H}_{i}$ son ortogonales, por la construcción en $(5)$ los $H_{i}$ son ortogonales, luego el producto $H_{M-1}H_{M-2}\dots H_{1} = Q^{T}$ es ortogonal. Por ende, se ha conseguido una matriz $H$ triangular superior, y una $Q$ ortogonal, tal que $QR = A$, por lo que se ha logrado la descomposición requerida. 
+	\paragraph{} Nótese que, como los $\widetilde{H}_{i}$ son ortogonales, por la construcción en $(5)$ los $H_{i}$ son ortogonales, luego el producto $H_{M-1}H_{M-2}\dots H_{1} = Q^{T}$ es ortogonal. Por ende, se ha conseguido una matriz $R$ triangular superior, y una $Q$ ortogonal, tal que $QR = A$, por lo que se ha logrado la descomposición requerida. 
 	
 	\paragraph{} Se ha evaluado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales, una operación de orden cúbico. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por columna en cada iteración.
 	
-	\begin{table}[h]
+	\begin{table}[]
 		\centering
 		\label{my-label}
 		\begin{tabular}{@{}lll@{}}
 			\toprule
-			Dimensión & T. Givens & T. Householder \\ \midrule
+			Dim. & T. Givens & T. Householder \\ \midrule
 			50        & 0.044000  & 0.004000       \\
 			100       & 0.513000  & 0.014000       \\
 			150       & 2.673000  & 0.046000       \\
@@ -223,7 +250,7 @@
 		\caption{Comparación entre implementaciones de descomposición QR $($segundos$)$.}
 	\end{table}
 	
-	\paragraph{} En el cuadro 1 se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
+	\paragraph{} En el cuadro 2 se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
 	
 	\subsection{Matriz de Hessemberg}
 	
@@ -242,24 +269,24 @@
 	\begin{thebibliography}{9}
 	
 		\bibitem{PCA}
-		International Journal of Emerging Technology and Advanced Engineering, Face 
-		Recognition Using Eigenfaces, Rajib Saha, Debotosh Bhattacharjee,
+		\textsc{International Journal of Emerging Technology and Advanced Engineering}, \textbf{Face 
+		Recognition Using Eigenfaces}, Rajib Saha, Debotosh Bhattacharjee,
 		\url{http://www.ijetae.com/files/Volume3Issue5/IJETAE_0513_14.pdf}
 		
 		\bibitem{dbf}
-		Cambridge University Computer Laboratory, The Database of Faces,
+		\textsc{Cambridge University Computer Laboratory}, \textbf{The Database of Faces},
 		\url{http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html}
 	
 		\bibitem{l9}
-		University of Southern Mississippi, QR Factorization,
+		\textsc{University of Southern Mississippi}, \textbf{QR Factorization},
 		\url{http://www.math.usm.edu/lambers/mat610/sum10/lecture9.pdf}
 		
 		\bibitem{hess}
-		Technische Universität Berlin, Hessemberg matrix visualization,
+		\textsc{Technische Universität Berlin}, \textbf{Hessemberg matrix visualization},
 		\url{http://www3.math.tu-berlin.de/Vorlesungen/SS11/NumMath2/Materials/hessenberg_eng.pdf}
 		
 		\bibitem{qr}
-		ETH Zurich, QR Algoritm,
+		\textsc{ETH Zurich}, \textbf{QR Algoritm},
 		\url{http://people.inf.ethz.ch/arbenz/ewp/Lnotes/chapter4.pdf}
 	
 	\end{thebibliography}

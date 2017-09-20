@@ -92,7 +92,8 @@ def eig(a):
 
         while prev is None or np.abs(prev-x[dim-1, dim-1]) > TOLERANCE:
             prev = x[dim-1, dim-1]
-            mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
+#            mu = wilkinson(x[dim-2, dim-2], x[dim-2, dim-1], x[dim-1, dim-1])
+            mu = prev
             q, r = qr_householder(x[0:dim, 0:dim] - np.dot(mu, identity))
 
             qi = np.eye(d)
@@ -215,19 +216,9 @@ def print_images(mats, name='image', time=1000):
     cv2.destroyAllWindows()
 
 
-
 def eigenmatrix(dim):
     i = np.eye(dim)
     for x in range(0, dim):
         i[x, x] = x+1
     r = np.random.rand(dim, dim)
     return np.dot(r, np.dot(i, np.linalg.inv(r)))
-
-# A = eigenmatrix(10)
-#
-# values, vectors = eig(A)
-#
-# print values
-#
-# print vectors[:, 0]
-# print np.dot(A, vectors[:, 0])
