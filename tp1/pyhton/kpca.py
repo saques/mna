@@ -13,8 +13,8 @@ IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
 personsno = NUM_INDIVIDUALS
-tstperper = 8
-trnperper = 10
+tstperper = 5
+trnperper = 5
 tstno = tstperper * personsno
 trnno = trnperper * personsno
 
@@ -32,14 +32,12 @@ class KPCA:
 
     def image_proyection_from_path(self, img_path):
         # Load training and images and their classes
-        db, classes = load_images_and_get_class(trnperper)
         tstimg = np.ravel(cv2.imread(img_path, flags=cv2.IMREAD_GRAYSCALE))
 
         # Make every pixel have a value between -1 and 1
-        db = np.divide(np.add(db, -127.5), 127.5)
         tstimg = np.divide(np.add(tstimg, -127.5), 127.5)
 
-        print self.project_normalized_images(tstimg)
+        return self.project_normalized_images(tstimg)
 
     def project_images(self, imgs):
         return self.project_normalized_images(np.divide(np.add(imgs, -127.5), 127.5))
