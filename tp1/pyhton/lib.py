@@ -113,7 +113,7 @@ def eig(a):
             x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
         values.append(x[dim-1, dim-1])
         dim -= 1
-    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), np.dot(p, vectors)
+    return np.flip(np.stack(values).round(-1*int(np.log10(TOLERANCE))), 0) , np.dot(p, vectors)
 
 
 def givens_rotation(a, b):
@@ -232,3 +232,18 @@ def eigenmatrix(dim):
         i[x, x] = x+1
     r = np.random.rand(dim, dim)
     return np.dot(r, np.dot(i, np.linalg.inv(r)))
+
+
+A = eigenmatrix(5)
+
+A = np.dot(A,A.T)
+
+l, v = eigh(A)
+
+l1, v1 = np.linalg.eigh(A)
+
+print l
+print v
+
+print l1
+print v1
