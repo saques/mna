@@ -37,7 +37,7 @@ def load_images_and_get_class(i):
             database.append(np.ravel(im))
             classes[imno] = path
             imno += 1
-    return (np.stack(database), classes)
+    return np.stack(database), classes
 
 
 def load_images_3(i, j):
@@ -83,8 +83,6 @@ def wilkinson(a, b, c):
 
 def eigh(a):
     L, V = eig(a)
-    print L
-    print V
     ps_indexorder = np.argsort(L)
 
     sortedV = np.eye(V.shape[0])

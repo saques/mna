@@ -2,6 +2,7 @@ import pygame
 import pygame.camera
 import cv2
 from kpca import KPCA
+from pca import PCA
 from sklearn import svm
 import numpy as np
 from collections import defaultdict
@@ -14,7 +15,9 @@ WIDTH_PGM = 92
 
 names = {0: 'Pedro',
          1: 'Alejo',
-         3: "Julian"}
+         2: "Julian",
+         3: "Matias",
+         4: "Mariano"}
 names = defaultdict(lambda: "Unknown", names)
 
 
@@ -32,12 +35,12 @@ cam.start()
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-kpca = KPCA()
-db, classes = kpca.get_default_db(10)
+kpca = PCA()
+db, classes = kpca.get_default_db(5)
 kpca.set_db(db)
 
 clf = svm.LinearSVC()  # Already implemented SVM
-clf.fit(kpca.calculate_eigenfaces(), classes.ravel())
+clf.fit(kpca.calculate_eigenfaces(), [0,1,2,3,4])
 
 while True:
     img = cam.get_image()
@@ -57,8 +60,8 @@ while True:
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-        ymin = max(y - int(h * 0.3), 0)
-        ymax = min(y + int(h * 1.5), HEIGHT)
+        ymin = max(y - int(h * 0.15), 0)
+        ymax = min(y + int(h * 1.05), HEIGHT)
         ratio = (ymax - ymin) / float(HEIGHT_PGM)
 
         x_center = int(x + w / 2)
@@ -68,7 +71,10 @@ while True:
 
         face = cv2.resize(face, (92, 112))
 
-        class_predicted = clf.predict(kpca.project_images(np.ravel(face)))
+        arr = []
+        arr.append(np.ravel(face))
+        arr = np.stack(arr)
+        class_predicted = clf.predict(kpca.project_images(arr))
         cv2.putText(img, names[class_predicted[0]], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), thickness=2)
         cv2.putText(img, names[class_predicted[0]], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), thickness=1)
 
@@ -77,6 +83,7 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print "Closing program..."
         break
+
 
 
 cam.stop()
