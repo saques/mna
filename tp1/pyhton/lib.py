@@ -81,6 +81,20 @@ def wilkinson(a, b, c):
     return c - np.sign(delta)*b**2/(np.abs(delta)+np.sqrt(delta**2 + b**2))
 
 
+def eigh(a):
+    L, V = eig(a)
+    print L
+    print V
+    ps_indexorder = np.argsort(L)
+
+    sortedV = np.eye(V.shape[0])
+    sortedL = np.zeros(V.shape[0])
+    for i,x in enumerate(ps_indexorder):
+        sortedV[:, i] = V[:,x]
+        sortedL[i] = L[x]
+
+    return sortedL, sortedV
+
 def eig(a):
     p, x = hessemberg(a)
     d = dim = x.shape[0]
