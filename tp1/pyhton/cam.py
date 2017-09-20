@@ -13,7 +13,8 @@ HEIGHT_PGM = 112
 WIDTH_PGM = 92
 
 names = {0: 'Pedro',
-         1: 'Alejo'}
+         1: 'Alejo',
+         3: "Julian"}
 names = defaultdict(lambda: "Unknown", names)
 
 
@@ -72,12 +73,6 @@ while True:
         cv2.putText(img, names[class_predicted[0]], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), thickness=1)
 
     cv2.imshow("Video", img)
-
-    if cv2.waitKey(1) & 0xFF == ord('s'):
-        print "Saving image..."
-
-        class_predicted = clf.predict(kpca.project_images(np.ravel(face)))
-        print names[class_predicted[0]]
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print "Closing program..."

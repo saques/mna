@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 
-NUM_INDIVIDUALS = 42
+NUM_INDIVIDUALS = 5
 TOLERANCE = 1E-6
 
 
