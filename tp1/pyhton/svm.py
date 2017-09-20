@@ -1,7 +1,8 @@
-from lib import *
+# from lib import *
 import numpy as np
 from sklearn import svm
 
+from pyhton.lib import load_images_3, normalize_matrix, calculate_omega, load_images
 
 omegas = []
 eigenfaces = []
@@ -50,14 +51,23 @@ dbc = db - mean
 
 # PseudoCovariance matrix
 pseudo = np.dot(dbc, dbc.transpose())
-ps_eigenvals, ps_eigenvecs = np.linalg.eigh(pseudo)
+ps_eigenvals, ps_eigenvecs = np.linalg.eig(pseudo)
 
-np.flip(ps_eigenvals, 0)
-np.flip(ps_eigenvecs, 0)
+ps_eigenvals = np.absolute(ps_eigenvals)
+
+#we mult by -1 to make argsort to order desc
+ps_indexorder = np.argsort(-ps_eigenvals)
+
+ps_sortedevectors = []
+
+for x in ps_indexorder:
+    ps_sortedevectors.append(ps_eigenvecs[x])
 
 # Calculating eigenfaces (returning to R^(h*v)
-eigenfaces = np.dot(dbc.T, ps_eigenvecs.T).T
-print eigenfaces[0,0]
+for x in range(0, ps_sortedevectors.shape[0]):
+    eigenfaces.append(np.dot(dbc.transpose(), ps_sortedevectors[x]))
+eigenfaces = np.stack(eigenfaces)
+
 
 eigenfaces = normalize_matrix(eigenfaces)
 
@@ -126,7 +136,6 @@ omegas_test = normalize_matrix(omegas_test)
 
 #Training
 clf = svm.SVC()
-clf.set_params(probability=True)
 
 clf.fit(omegas, classes)
 
