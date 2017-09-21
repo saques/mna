@@ -99,7 +99,7 @@
 	
 	\paragraph{} Siendo $P_{k}$ la k-ésima fila de $C$. Luego, una opción es promediar los $M$ $\Omega_{k_{s}}$ de cada individuo de la base de datos, así logrando un valor medio $\Omega_{M_{p}}$ por cada ejemplar $1 \le p \le N$, obteniendo un vector que defina la \textit{clase} de un individuo en particular. Otra posibilidad es no realizar ningún promedio alguno, entregando a la función clasificadora tantos vectores $\Omega$ como cantidad de imágenes por individuo haya. En la sección de resultados se analizarán las dos posibilidades en detalle.  
 	
-	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
+	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}^{T}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
 	
 	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ $-$ considerando el caso en el que los vectores $\Omega$ se promedien $-$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
 	
