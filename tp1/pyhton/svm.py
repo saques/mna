@@ -4,49 +4,6 @@ from sklearn import svm
 from lib import *
 
 
-PICTURE = 1
-imgperper = 1
-NUM_INDIVIDUALS = 5
-
-#OUR FACES
-
-#AVERAGE
-
-# 1/1/5 -> 100
-#
-
-# AVERAGE
-
-# 25 <- 6/4/30
-# 25 <- 10/4/30
-# 29 <- 2/4/30
-
-# 24 <- 10/6/30
-# 27 <- 8/6/30
-# 27 <- 7/6/30
-# 29 <- 3/6/30
-
-# 20 <- 3/6/20
-# 16 <- 9/6/20
-# 19 <- 8/6/20
-
-# WITHOUT AVERAGE
-
-# 24 <- 6/4/30
-# 22 <- 10/4/30
-# 27 <- 2/4/30
-
-# 23 <- 10/6/30
-# 20 <- 8/6/30
-# 24 <- 7/6/30
-# 26 <- 3/6/30
-
-# 19 <- 3/6/20
-# 14 <- 9/6/20
-# 16 <- 8/6/20
-
-
-
 def universe(PICTURE, imgperper, NUM_INDIVIDUALS):
     omegas = []
     eigenfaces = []
@@ -93,25 +50,25 @@ def universe(PICTURE, imgperper, NUM_INDIVIDUALS):
 
     # AVERAGE
 
-    # for j in range(0, NUM_INDIVIDUALS):
-    #     avg = None
-    #     for i in range(0, imgperper):
-    #         if i == 0:
-    #             avg = calculate_omega(eigenfaces, dbc[j*imgperper+i])
-    #         else:
-    #             avg += calculate_omega(eigenfaces, dbc[j*imgperper+i])
-    #
-    #     avg = np.divide(avg, imgperper)
-    #
-    #     omegas.append(avg)
-    #
-    # omegas = np.stack(omegas)
+    for j in range(0, NUM_INDIVIDUALS):
+        avg = None
+        for i in range(0, imgperper):
+            if i == 0:
+                avg = calculate_omega(eigenfaces, dbc[j*imgperper+i])
+            else:
+                avg += calculate_omega(eigenfaces, dbc[j*imgperper+i])
+
+        avg = np.divide(avg, imgperper)
+
+        omegas.append(avg)
+
+    omegas = np.stack(omegas)
 
     # WITHOUT AVERAGE
 
-    for i in range(0, NUM_INDIVIDUALS*imgperper):
-        omegas.append(calculate_omega(eigenfaces, dbc[i]))
-    omegas = np.stack(omegas)
+    # for i in range(0, NUM_INDIVIDUALS*imgperper):
+    #     omegas.append(calculate_omega(eigenfaces, dbc[i]))
+    # omegas = np.stack(omegas)
 
 
     omegas = normalize_matrix(omegas)
@@ -120,15 +77,15 @@ def universe(PICTURE, imgperper, NUM_INDIVIDUALS):
 
     #AVERAGE
 
-    # for j in xrange(0, NUM_INDIVIDUALS):
-    #     classes.append(j)
+    for j in xrange(0, NUM_INDIVIDUALS):
+        classes.append(j)
 
 
     # WITHOUT AVERAGE
 
-    for i in range(0, NUM_INDIVIDUALS):
-        for j in range(0, imgperper):
-            classes.append(i)
+    # for i in range(0, NUM_INDIVIDUALS):
+    #     for j in range(0, imgperper):
+    #         classes.append(i)
 
     classes = np.stack(classes)
 

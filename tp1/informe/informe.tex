@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{listings}
 \usepackage{graphicx}
+\usepackage{float}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{chngcntr}
@@ -42,6 +43,10 @@
 		Se han empleado técnicas matriciales, tales como \textit{Principal Component Analysis} y su variante, \textit{Kernel Principal component Analysis} para la clasificación de caras en sus respectivas clases, teniendo como referencia \textit{sets} de entrenamiento.  
 		
 		Asimismo, se han implementado algoritmos para el hallado de los autovectores y autovalores de una matriz, y se han explorado numerosos caminos para la descomposición QR, como así también para otras transformaciones que sirven de soporte para la implementación de un algoritmo QR mejorado.   
+		
+		Tras minuciosos análisis comparativos entre las dos metodologías implementadas, se pudo concluir que \textbf{KPCA} exhibe un comportamiento superior frente a \textbf{PCA}, dado que la proporción de aciertos del primer método demostró ser consistentemente superior a la del último.
+		
+		Por último, al realizar pruebas con \textit{kernels} polinomiales de diferentes grados, no ha podido afirmarse que a grados superiores la precisión de la clasificación sea, de mismo modo, superior.  
 	\end{abstract}
 	
 	\paragraph{Palabras clave:} Descomposición QR, Transformación de Householder, Matriz de Hessemberg, Algoritmo QR, Corrimiento de Wilkinson, Matriz de Covarianza, \textit{Principal Component Analysis}, \textit{Kernel}, \textit{Support Vector Machines}.
@@ -92,15 +97,78 @@
 		\omega_{i} = v_{i}^{T}P_{k}^{T}
 	\end{align}
 	
-	\paragraph{} Siendo $P_{k}$ la k-ésima fila de $C$. Luego, se promedian los $M$ $\Omega_{k_{s}}$ de cada individuo de la base de datos, para así lograr un valor medio $\Omega_{M_{p}}$ por cada ejemplar $1 \le p \le N$, así logrando un vector que defina la \textit{clase} de un individuo en particular.
+	\paragraph{} Siendo $P_{k}$ la k-ésima fila de $C$. Luego, una opción es promediar los $M$ $\Omega_{k_{s}}$ de cada individuo de la base de datos, así logrando un valor medio $\Omega_{M_{p}}$ por cada ejemplar $1 \le p \le N$, obteniendo un vector que defina la \textit{clase} de un individuo en particular. Otra posibilidad es no realizar ningún promedio alguno, entregando a la función clasificadora tantos vectores $\Omega$ como cantidad de imágenes por individuo haya. En la sección de resultados se analizarán las dos posibilidades en detalle.  
 	
 	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
 	
-	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
+	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ $-$ considerando el caso en el que los vectores $\Omega$ se promedien $-$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
 	
 	\paragraph{} Existe otra técnica para realizar el último cálculo, por medio del uso de \textit{Support Vector Machines}. En la implementación realizada, se ha utilizado la librería \verb|Sklearn| para dicho propósito. Su implementación de SVM espera, para el \textit{set} de entrenamiento, un arreglo de vectores que hagan las veces de los \textit{individuos}, y un arreglo de enteros que especifique a que clase pertenece cada uno de ellos. En este caso, el primer arreglo contendrá los $\Omega_{M_{p}}$. La entrada del método \verb|predict| será el $\Omega_{Z}$ a clasificar. 
 	
-	\subsection{Kernel-PCA}
+	\subsection{Kernels y KPCA}
+	
+	\subsubsection{Funciones \textit{Kernel}}
+	
+	\paragraph{} Los métodos de \textit{kernel} son métodos de reconocimiento de patrones que permiten trabajar en altas dimensiones de forma implícita, es decir sin nunca computar coordenadas en dicho espacio. Utilizar estos métodos es computacionalmente mucho más eficiente a la hora de trabajar en dimensiones altas, y permite obtener datos analizables de forma lineal utilizando los denominados \textit{hiperplanos}. Este tipo de enfoque es llamado \textit{kernel trick} o truco de \textit{kernel} \cite{kern1}. 
+	
+	\paragraph{} Las funciones de \textit{kernel} son definidas de la siguiente manera:
+	
+	\begin{align}
+		k : X \times X \to \mathbb{R}
+	\end{align}
+	
+	\paragraph{} Para facilitar las operaciones, se puede notar:
+	
+	\begin{align}
+		\phi : \mathbb{R}^{d} \to \mathbb{R}^{k} , k > d
+	\end{align}
+	
+	\paragraph{} Siendo $\phi$ la función que \textit{mapea} los vectores $x$ a una dimensión superior utilizando combinaciones no lineales de las componentes de $x$. A modo de ejemplo, supóngase a $x \in \mathbb{R}^{d}$:
+	
+	\begin{align*}
+		x = \left[x_{1}\quad x_{2}\quad\dots\quad x_{d}\right]^{T} \\ 
+		\phi(x) = \left[x_{1}\quad x_{2}\quad x_{1}x_{2}\quad x_{1}^{2}\quad x_{1}x_{2}^{3} \quad \dots\right]^{T}
+	\end{align*}
+	
+	\paragraph{} Luego, llámese \textit{función kernel} al producto interno de estas proyecciones de $x$:
+	
+	\begin{align}
+		\kappa(x_{i}, x_{j}) = \phi(x_{i})\phi(x_{j})^{T}
+	\end{align}
+	
+	\paragraph{} Existen numerosas funciones de \textit{kernel} conocidas. Algunos ejemplos son \cite{kernex}:
+	
+	\begin{itemize}
+		\item \textit{Kernel} polinómico: \\ $\kappa(x,x')=(1+xx')^{p}$
+		\item \textit{Kernel} gaussiano: \\ $\kappa(x,x')=\exp^{-V\lVert x-x'\rVert^{2}}$
+		\item \textit{Kernel} de tangente hiperbólica: \\ $\kappa(x,x')=\tanh(xx'+\delta)$
+	\end{itemize}
+	
+	\paragraph{} Cabe aclarar que dichas funciones de \textit{kernel} son un listado muy reducido de las existentes. Hallar la función que más se adecue al problema a resolver puede ser una tarea compleja.
+	
+	\subsubsection{\textit{Kernel} PCA}
+	
+	\paragraph{} Asumiendo que los datos son difícilmente linealizables, \textbf{KPCA} ofrece una gran ventaja frente a \textbf{PCA} ya que, como se explicó anteriormente, permitirá linealizar la información a través de una transformación a una dimensión superior. Para comenzar, una función de \textit{kernel} debe ser aplicada sobre los datos.
+	
+	\paragraph{} Considérese la siguiente expresión $\kappa(x_{i},x_{j})=\phi(x_{i})\phi(x_{j})^{T} = K_{ij}$.
+	
+	\paragraph{} Como no se tiene garantizado que los datos en el \textit{kernel} estén centrados, se recurrirá a centrarlos según la siguiente ecuación:
+	
+	\begin{align}
+		\Phi_{i} := \Phi_{i} - \frac{1}{N}\sum_{k}\Phi_{k}
+	\end{align}
+	
+	\paragraph{} Luego, la matriz de \textit{kernel} centrada resulta:
+	
+	\begin{align}
+		K_{C} = K - 1_{\frac{1}{N}}\mathbf{K} - \mathbf{K}1_{\frac{1}{N}}  + 1_{\frac{1}{N}}\mathbf{K}1_{\frac{1}{N}}
+	\end{align}
+	
+	\paragraph{} Donde $1_{\frac{1}{N}} \in \mathbb{R}^{N \times N}$ una matriz con todos valores $\frac{1}{N}$ $(\mathbf{K} \in \mathbb{R}^{N \times N})$.
+	
+	\paragraph{} Luego, de manera idéntica a \textbf{PCA}, se buscan hallar los autovalores y autovectores de una matriz, en este caso, de $K_{C}$. Esto puede considerarse equivalente a aplicar la técnica de \textbf{PCA} en la dimensión superior $\mathbb{R}^{K}$.
+	
+	\paragraph{} El ordenamiento de los autovalores y sus respectivos autovectores en orden decreciente permite seleccionar las componentes más significativas del análisis, para luego proyectar las imágenes sobre los mismos y generar las \textit{eigenfaces}. Un similar procedimiento de reducción puede realizarse en \textbf{PCA}.
 	
 	
 	\section{Algoritmos de soporte}
@@ -118,9 +186,9 @@
 	
 	\paragraph{} Nótese que, como los $Q_{k}$ son ortogonales, se cumple la siguiente igualdad:
 	
-	\begin{align}
+	\begin{align*}
 		A_{k+1} &= R_{k}Q_{k}  \\ &= Q^{-1}_{k}Q_{k}R_{k}Q_{k} \\ &= Q^{-1}_{k}A_{k}Q_{k}
-	\end{align}
+	\end{align*}
 	
 	\paragraph{} Por ende, los $A_{k}$ son similares entre sí $\forall k\ge0$.
 	
@@ -153,10 +221,10 @@
 	
 	\paragraph{} Por lo que $A_{k+1} \sim A_{k}$. Idealmente, en cada paso $\kappa_{k} = \lambda_{i}$, siendo $\lambda_{i}$ el autovalor al que converge el valor inferior derecho de la diagonal. Como precisamente el problema que se intenta resolver es obtener los autovalores de una matriz, se deberán utilizar heurísticas para aproximar dichos valores en cada iteración. Una heurística posible es la \textit{trivial}: tomar exactamente el extremo inferior derecho de la diagonal como $\kappa_{k}$. Existen otras heurísticas, tales como los corrimientos de Wilkinson, que buscan aproximar uno de los autovalores de la matriz de $2\times2$ de la esquina inferior derecha.
 	
-	\paragraph{} Para evaluar el comportamiento del algoritmo frente a diferentes tipos de corrimiento, se han tomado mediciones del tiempo de ejecución del algoritmo QR utilizando diferentes heurísticas para los \textit{shifts}. Para cada una de las dimensiones del cuadro siguiente, se han generado matrices aleatorias cuyos autovalores $-$ por medio de una transformación de similaridad $-$ sean exactamente los de $ \Lambda = \left[1\quad\dots\quad dim\right]$. En el cuadro siguiente se exhiben los resultados obtenidos.
+	\paragraph{} Para evaluar el comportamiento del algoritmo frente a diferentes tipos de corrimiento, se han tomado mediciones del tiempo de ejecución del algoritmo QR utilizando diferentes heurísticas para los \textit{shifts}. Para cada una de las dimensiones del cuadro siguiente, se han generado matrices aleatorias cuyos autovalores $-$ por medio de una transformación de similaridad $-$ sean exactamente los de $ \Lambda = \left[1\quad\dots\quad dim\right]$. En \ref{shcmp} se exhiben los resultados obtenidos.
 	\begin{table}[h]
 		\centering
-		\label{my-label}
+		\label{shcmp}
 		\begin{tabular}{@{}llll@{}}
 			\toprule
 			Dim. & Sin \textit{shifts} & Wilkinson & \textit{Trivial}  \\ \midrule
@@ -236,7 +304,7 @@
 	
 	\begin{table}[]
 		\centering
-		\label{my-label}
+		\label{qrcmp}
 		\begin{tabular}{@{}lll@{}}
 			\toprule
 			Dim. & T. Givens & T. Householder \\ \midrule
@@ -250,7 +318,7 @@
 		\caption{Comparación entre implementaciones de descomposición QR $($segundos$)$.}
 	\end{table}
 	
-	\paragraph{} En el cuadro 2 se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
+	\paragraph{} En \ref{qrcmp} se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
 	
 	\subsection{Matriz de Hessemberg}
 	
@@ -260,12 +328,94 @@
 	
 	\paragraph{} El objetivo es generar matrices de Householder $P_{i}$, con $ 1\le i \le M-2$, tal que $P_{1}A$ anule los elementos de la primera columna por debajo de la \textbf{subdiagonal}. Luego, como se busca generar una matriz similar a la entrada, se multiplica por derecha a este resultado por $P_{1}^{-1}$. Procediendo de esta forma hasta $i = M-2$ se obtiene $H = P_{M-2}\dots P_{1}AP_{1}^{-1}\dots P_{M-2}^{-1}$, con $H \sim A$. Un interesante ejemplo gráfico del procedimiento se puede observar en la referencia a continuación \cite{hess}. 
 	
+
+	
 	\section{Resultados}
+	
+	\begin{table*}[t]
+		\centering
+		\begin{tabular}{@{}ll|ll|ll@{}}
+			\multicolumn{2}{c|}{Parámetros} & \multicolumn{2}{c|}{DB. Cambridge}   & \multicolumn{2}{c}{DB. Propia}        \\
+			N.Img.      & Img. P/Per.      & \multicolumn{1}{c|}{C/Prom.} & S/Prom. & \multicolumn{1}{c|}{C/Prom.} & S/Prom. \\ \midrule
+			2           & 1                & .8                           & .8      & .8                           & .8      \\
+			3           & 1                & 1                            & 1       & 1                            & 1       \\
+			4           & 1                & .8                           & .8      & .6                           & .6      \\
+			7           & 1                & 1                            & 1       & 1                            & 1       \\
+			4           & 3                & .8                           & .8      & .4                           & .6      \\
+			5           & 3                & .6                           & .6      & .6                           & .8      \\
+			6           & 3                & .8                           & .8      & .8                           & .6      \\
+			7           & 3                & .8                           & .8      & .6                           & .8      \\
+			8           & 3                & 1                            & 1       & .2                           & .4      \\
+			8           & 5                & 1                            & 1       & .6                           & .4      \\
+			9           & 5                & .8                           & .8      & .6                           & .6      \\
+			8           & 7                & .8                           & .8      & .4                           & .4      \\
+			9           & 7                & .4                           & 1       & .4                           & .6     
+		\end{tabular}
+		\label{pca}
+		\caption{\textbf{PCA:} Dos bases de datos diferentes}
+	\end{table*}
+	
+	
+	% Please add the following required packages to your document preamble:
+	% \usepackage{booktabs}
+	% \usepackage[normalem]{ulem}
+	% \useunder{\uline}{\ul}{}
+	\begin{table*}[]
+		\centering
+		\begin{tabular}{@{}ll|ll|ll@{}}
+			\multicolumn{2}{c}{Parámetros} & \multicolumn{2}{c|}{Cambridge}                & \multicolumn{2}{c}{Propia}                    \\
+			N.Img.      & Img. P/Per.      & \multicolumn{1}{l|}{Polin. O. 2} & Polin. O.4 & \multicolumn{1}{l|}{Polin. O. 2} & Polin. O. 4 \\ \midrule
+			2           & 1                & .8                               & \textbf{1} & 1                                & 1           \\
+			3           & 1                & 1                                & .8         & .8                               & \textbf{1}  \\
+			4           & 1                & 1                                & 1          & .6                               & \textbf{.8} \\
+			7           & 1                & 1                                & 1          & 1                                & 1           \\
+			4           & 3                & 1                                & \textbf{1} & .6                               & .6          \\
+			5           & 3                & .8                               & .8         & 1                                & 1           \\
+			6           & 3                & 1                                & 1          & .8                               & .6    \\
+			7           & 3                & 1                                & 1          & 1                                & 1           \\
+			8           & 3                & .8                               & .8         & .8                               & .8          \\
+			8           & 5                & 1                                & 1          & .8                               & .8          \\
+			9           & 5                & 1                                & 1          & .8                               & .8          \\
+			8           & 7                & .8                               & \textbf{1} & 1                                & 1           \\
+			9           & 7                & 1                                & 1          & .8                               & .8         
+		\end{tabular}
+		\caption{\textbf{KPCA:} Comparación entre diferentes \textit{kernels} polinomiales}
+		\label{kpca}
+	\end{table*}
+	
+	\paragraph{} A continuación, se discutirán los resultados de la ejecución de ambas implementaciones, tomando como resultado de las mismas la proporción de aciertos por sobre el total de ejemplares. 
+	
+	\paragraph{} A la hora de realizar las pruebas, se ha tomado tanto una base de datos de construcción propia como así también la base de datos recomendada por la Cátedra \cite{dbf}. El objetivo de realizar esto es analizar el comportamiento de los algoritmos frente a bases de datos de diferente calidad. 
+	
+	\paragraph{} A modo de aclaración, en cada uno de los casos que se realizaron se ha buscado clasificar imágenes \textbf{no incluidas} en el \textit{set} de entrenamiento, a los efectos de evaluar las capacidades de los algoritmos de reconocer imágenes con rasgos distintos a los conocidos.
+	
+	\paragraph{Notas sobre el procedimiento:} Para cada una de las tablas, se están tomando $Img. P/Per$ imágenes de \textbf{5 individuos} diferentes. $N.Img.$ representa el número de imagen de cada individuo que se está tomando en cada ocasión. Luego, para cada base de datos analizada, y para cada configuración del par $(N. Img. - Img. P/Per.)$, se están clasificando 5 imágenes, usando un \textit{set} de entrenamiento de un tamaño de $5*Img. P/Per.$.
+	
 	
 	\subsection{PCA}
 	
+	\paragraph{} Tal como se ha planteado en la descripción del método de reconocimiento de caras por \textit{Principal Component Analysis}, una de las opciones es \textbf{no} promediar las proyecciones de las imágenes del \textit{set} de entrenamiento con las \textit{eigenfaces}. Como se puede observar en \ref{pca}, y exceptuando contados casos, no se evidencian diferencias considerables entre el método que realiza los promedios y el que no. Existen algunos casos, tales como el $[N. Img = 9; Img. P/Per = 7]$, en el que, tomando ambas bases de datos, el desempeño del algoritmo que promedia los $\Omega$ es considerablemente inferior al del que no realiza dicho promedio. 
+	
+	\paragraph{} Sin embargo, el aspecto quizás más destacable que puede observarse en \ref{pca} es la diferencia de resultados entre la aplicación de los algoritmos sobre la base de datos sugerida por la Cátedra y la provista por el equipo. A pesar de que se han tomado medidas para minimizar los posibles errores por imágenes poco claras $($procurar un ambiente con abundante iluminación, centrar la captura y usar un fondo estandarizado$)$, se puede observar que en cada uno de los casos, los resultados con la primera base de datos son como mínimo igual de precisos que los de la segunda. Posibles soluciones a este hallazgo incluyen tanto ampliar la base de datos propia, como así también procurar un entorno profesional para la captura de imágenes.  
+	
+	\paragraph{} Otro aspecto que puede notarse en \ref{pca} es que, a medida que aumenta el tamaño del \textit{set} de entrenamiento, la precisión no necesariamente aumenta de igual forma. Esto se puede observar en el caso de la imagen $7$: tomando solo $1$ muestra por individuo para el entrenamiento, todas las imágenes son correctamente clasificadas. Sin embargo, tomando $3$ muestras por individuo, la precisión disminuye en todos los casos.
+		
 	\subsection{Kernel-PCA}
 	
+	\paragraph{} En \ref{kpca} puede evidenciarse como, efectivamente, la técnica del \textit{kernel} arroja resultados mejorados con respecto al \textbf{PCA} sin mejoras de tal tipo. 
+	
+	\paragraph{} La mejora de los resultados resulta clara en el caso de la base de datos sugerida por la Cátedra, donde prevalecen, salvo contadas excepciones, los aciertos absolutos. Dicha mejoría se evidencia también en la base de datos provista por el equipo: en casos donde la proporción de aciertos era igual o inferior, en \textbf{PCA} a $0.6$, en \textbf{KPCA} las mismas proporciones nunca son menores a $0.8$. Este último ejemplo podría estar indicando el accionar del \textit{kernel}: la mayor cantidad de datos del \textit{set} de entrenamiento pudo ser separada más correctamente en una dimensión elevada.
+	
+	\paragraph{} Como puede notarse, los cambios de precisión utilizando un polinomio de grado $4$ no son necesariamente positivos tomando como punto de comparación un \textbf{KPCA} que utiliza un \textit{kernel} polinomial de grado $2$. En ambas bases de datos pueden observarse tanto aumentos del número de clasificaciones correctas, como así también decrecimiento en las mismas. Como no se pudo corroborar un aumento generalizado de la precisión, podría inferirse que polinomios de grado superior \textit{no necesariamente} garantizan mejores resultados.
+	
+	\section{Conclusión}
+	
+	\paragraph{} Se pudo corroborar la mejora que supone el método de \textit{Kernel Principal Component Analysis} por sobre su versión sin la utilización de funciones de \textit{kernel} para elevar la dimensión de la muestra. Sin embargo, no se ha podido concluir que un \textit{kernel} polinomial de grado mayor a $2$ exhiba mejores resultados que uno de dicho grado a la hora de aplicar \textbf{PCA}.
+	
+	\paragraph{} Por otro lado, en lo que respecta al algoritmo QR, se han analizado diversos \textit{shifts}, determinándose que los corrimientos de Wilkinson no necesariamente generan una convergencia más rápida frente a un corrimiento trivial. 
+	
+	
+	\newpage
 	\begin{thebibliography}{9}
 	
 		\bibitem{PCA}
@@ -276,6 +426,14 @@
 		\bibitem{dbf}
 		\textsc{Cambridge University Computer Laboratory}, \textbf{The Database of Faces},
 		\url{http://www.cl.cam.ac.uk/research/dtg/attarchive/facedatabase.html}
+	
+		\bibitem{kern1}
+		\textsc{Sebastian Raschka},
+		\url{http://sebastianraschka.com/Articles/2014_kernel_pca.html#kernel-functions-and-the-kernel-trick}
+		
+		\bibitem{kernex}
+		\textsc{University of Haifa}, \textbf{Kernel PCA}
+		\url{http://www.cs.haifa.ac.il/~rita/uml_course/lectures/KPCA.pdf}
 	
 		\bibitem{l9}
 		\textsc{University of Southern Mississippi}, \textbf{QR Factorization},
