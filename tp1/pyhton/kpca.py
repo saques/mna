@@ -12,7 +12,7 @@ IMG_HEIGHT = 112
 IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
-personsno = NUM_INDIVIDUALS
+personsno = 5
 tstperper = 5
 trnperper = 5
 tstno = tstperper * personsno
@@ -75,7 +75,7 @@ class KPCA:
         return np.dot(K.T, eigenvectors)
 
     def get_default_db(self, imperper):
-        return load_images_and_get_class(imperper)
+        return load_images_and_get_class(imperper, personsno)
 
     def set_db(self, db):
         self.db = np.divide(np.add(db, -127.5), 127.5)

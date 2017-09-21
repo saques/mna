@@ -12,7 +12,7 @@ IMG_HEIGHT = 112
 IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
-personsno = NUM_INDIVIDUALS
+personsno = 5
 tstperper = 5
 trnperper = 5
 tstno = tstperper * personsno
@@ -74,12 +74,12 @@ class PCA:
 
         eigenfaces_alt = []
 
-        for i in xrange(0, NUM_INDIVIDUALS):
+        for i in xrange(0, personsno):
             eigenfaces_alt.append(ef[i])
 
         self.eigenfaces = np.stack(eigenfaces_alt)
 
-        for j in range(0, NUM_INDIVIDUALS):
+        for j in range(0, personsno):
             avg = None
             for i in range(0, trnperper):
                 if i == 0:
@@ -95,7 +95,7 @@ class PCA:
         return self.omegas
 
     def get_default_db(self, imperper):
-        return load_images_and_get_class(imperper)
+        return load_images_and_get_class(imperper,personsno)
 
     def set_db(self, db):
         self.db = db

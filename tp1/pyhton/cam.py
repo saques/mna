@@ -12,7 +12,6 @@ WIDTH = 640
 
 HEIGHT_PGM = 112
 WIDTH_PGM = 92
-
 names = {0: 'Pedro',
          1: 'Alejo',
          2: "Julian",
@@ -82,6 +81,8 @@ while True:
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print "Closing program..."
+        # cv2.imwrite(str(a)+".pgm", face)
+        # a += 1
         break
 
 cam.stop()
