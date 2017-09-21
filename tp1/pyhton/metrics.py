@@ -17,7 +17,7 @@ def kpca_universe(PICTURE, imgperper, NUM_INDIVIDUALS):
 
     clf = svm.LinearSVC()  # Already implemented SVM
     eigenvectors, eig_classes = kpca.calculate_eigenfaces()
-    clf.fit(eigenvectors, classes)
+    clf.fit(eigenvectors, eig_classes)
 
     db_test = load_images(PICTURE, NUM_INDIVIDUALS)
     counter = 0

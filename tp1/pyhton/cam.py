@@ -6,6 +6,7 @@ from pca import PCA
 from sklearn import svm
 import numpy as np
 from collections import defaultdict
+from parameters import *
 
 HEIGHT = 480
 WIDTH = 640
@@ -34,13 +35,13 @@ cam.start()
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-kpca = KPCA()
-db, classes = kpca.get_default_db(5)
+kpca = PCA()
+db, classes = kpca.get_default_db(Parameters.trnperper)
 kpca.set_db(db, classes)
 
 clf = svm.LinearSVC()  # Already implemented SVM
 eigenvectors, eig_classes = kpca.calculate_eigenfaces()
-clf.fit(eigenvectors, classes)
+clf.fit(eigenvectors, eig_classes)
 
 while True:
     img = cam.get_image()
