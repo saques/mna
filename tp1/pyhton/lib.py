@@ -4,14 +4,12 @@ from scipy.linalg import hessenberg as hess
 import numpy as np
 import cv2
 
-
-NUM_INDIVIDUALS = 5
-TOLERANCE = 1E-6
+TOLERANCE = 1E-30
 
 
 # Returns a matrix containing NUM_INDIVIDUAL rows
 # of each picture named "id.pgm"
-def load_images(i):
+def load_images(i, NUM_INDIVIDUALS):
     database = []
     for path in xrange(0, NUM_INDIVIDUALS):
         im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, i), flags=cv2.IMREAD_GRAYSCALE)
@@ -19,7 +17,7 @@ def load_images(i):
     return np.stack(database)
 
 
-def load_images_2(i):
+def load_images_2(i, NUM_INDIVIDUALS):
     database = []
     for path in xrange(0, NUM_INDIVIDUALS):
         for x in xrange(0,i):
@@ -27,7 +25,7 @@ def load_images_2(i):
             database.append(np.ravel(im))
     return np.stack(database)
 
-def load_images_and_get_class(i):
+def load_images_and_get_class(i, NUM_INDIVIDUALS):
     database = []
     classes = np.zeros([NUM_INDIVIDUALS * i])
     imno = 0
@@ -43,7 +41,7 @@ def load_images_and_get_class(i):
 def load_images_3(i, j):
     database = []
     for path in xrange(0, j):
-        for x in xrange(0,i):
+        for x in xrange(0, i):
             im = cv2.imread("../orl_faces/s%d/%d.pgm" % (path+1, x+1), flags=cv2.IMREAD_GRAYSCALE)
             database.append(np.ravel(im))
     return np.stack(database)
@@ -115,7 +113,7 @@ def eig(a):
             x[0:dim, 0:dim] = np.dot(r, q) + mu*identity
         values.append(x[dim-1, dim-1])
         dim -= 1
-    return np.stack(values).round(-1*int(np.log10(TOLERANCE))), np.dot(p, vectors)
+    return np.flip(np.stack(values).round(-1*int(np.log10(TOLERANCE))), 0) , np.dot(p, vectors)
 
 
 def givens_rotation(a, b):
