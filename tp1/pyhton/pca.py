@@ -1,7 +1,7 @@
 from lib import *
 import numpy as np
 import cv2
-from sklearn import svm
+from parameters import *
 
 '''
 Facial Recognition using KPCA
@@ -13,10 +13,6 @@ IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
 personsno = 5
-tstperper = 5
-trnperper = 5
-tstno = tstperper * personsno
-trnno = trnperper * personsno
 
 
 class PCA:
@@ -27,6 +23,8 @@ class PCA:
         self.omegas = []
         self.db = None
         self.mean = None
+        self.classes = None
+        self.trnperper = Parameters.trnperper
 
     def image_proyection_from_path(self, img_path):
         # Load training and images and their classes
@@ -79,24 +77,28 @@ class PCA:
 
         self.eigenfaces = np.stack(eigenfaces_alt)
 
+        ret_classes = []
+        self.trnperper = Parameters.trnperper
         for j in range(0, personsno):
             avg = None
-            for i in range(0, trnperper):
+            ret_classes.append(self.classes[j * self.trnperper])
+            for i in range(0, self.trnperper):
                 if i == 0:
-                    avg = calculate_omega(self.eigenfaces, dbc[j * trnperper + i])
+                    avg = calculate_omega(self.eigenfaces, dbc[j * self.trnperper + i])
                 else:
-                    avg += calculate_omega(self.eigenfaces, dbc[j * trnperper + i])
+                    avg += calculate_omega(self.eigenfaces, dbc[j * self.trnperper + i])
 
-            avg = np.divide(avg, trnperper)
+            avg = np.divide(avg, self.trnperper)
 
             self.omegas.append(avg)
 
         self.omegas = np.stack(self.omegas)
-        return self.omegas
+        return self.omegas, ret_classes
 
     def get_default_db(self, imperper):
         return load_images_and_get_class(imperper,personsno)
 
-    def set_db(self, db):
+    def set_db(self, db, classes):
         self.db = db
         self.mean = np.int_(self.db.mean(0))
+        self.classes = classes

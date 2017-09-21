@@ -1,6 +1,4 @@
-import time
 from math import *
-from scipy.linalg import hessenberg as hess
 import numpy as np
 import cv2
 

@@ -36,10 +36,11 @@ faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 kpca = KPCA()
 db, classes = kpca.get_default_db(5)
-kpca.set_db(db)
+kpca.set_db(db, classes)
 
 clf = svm.LinearSVC()  # Already implemented SVM
-clf.fit(kpca.calculate_eigenfaces(), classes)
+eigenvectors, eig_classes = kpca.calculate_eigenfaces()
+clf.fit(eigenvectors, classes)
 
 while True:
     img = cam.get_image()
