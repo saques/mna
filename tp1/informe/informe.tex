@@ -302,7 +302,7 @@
 	
 	\paragraph{} Se ha evaluado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales, una operación de orden cúbico. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por columna en cada iteración.
 	
-	\begin{table}[]
+	\begin{table}[!htb]
 		\centering
 		\label{qrcmp}
 		\begin{tabular}{@{}lll@{}}
@@ -318,7 +318,7 @@
 		\caption{Comparación entre implementaciones de descomposición QR $($segundos$)$.}
 	\end{table}
 	
-	\paragraph{} En \ref{qrcmp} se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
+	\paragraph{} En $2$ se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
 	
 	\subsection{Matriz de Hessemberg}
 	
