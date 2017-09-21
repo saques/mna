@@ -35,7 +35,7 @@ cam.start()
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-kpca = PCA()
+kpca = KPCA()
 db, classes = kpca.get_default_db(Parameters.trnperper)
 kpca.set_db(db, classes)
 
