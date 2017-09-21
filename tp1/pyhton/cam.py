@@ -35,12 +35,12 @@ cam.start()
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
-kpca = PCA()
+kpca = KPCA()
 db, classes = kpca.get_default_db(5)
 kpca.set_db(db)
 
 clf = svm.LinearSVC()  # Already implemented SVM
-clf.fit(kpca.calculate_eigenfaces(), [0,1,2,3,4])
+clf.fit(kpca.calculate_eigenfaces(), classes)
 
 while True:
     img = cam.get_image()
@@ -83,8 +83,6 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print "Closing program..."
         break
-
-
 
 cam.stop()
 cv2.destroyAllWindows()
