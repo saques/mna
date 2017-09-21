@@ -61,7 +61,7 @@
 	
 	\paragraph{} Sea $N$ la cantidad de individuos presentes en la base de datos, y sea $M$ la cantidad de imágenes de cada uno de ellos que se usarán a los efectos de \textit{entrenar} el \textit{software} de reconocimiento. Cada imagen tiene una dimensión $X\times Y$. Luego, se debe construir una matriz $T \in \mathbb{N}^{MN\times XY}$ que contenga todas las muestras a analizar. Luego, a la matriz $T$ se le resta fila por fila la \textit{cara promedio} $M$, es decir, la media de las filas de $T$. Esta matriz $C = T - M$ puede contener valores negativos, por lo que $C \in \mathbb{Z}^{MN\times XY}$.
 	
-	\paragraph{} El siguiente paso en el método de \textbf{PCA} es el hallado de los autovectores de la matriz de covarianza $S = C^{T}C$. Dichos autovectores son también referidos en la bibliografía por el nombre de \textit{autocaras o eigenfaces}. Es preciso observar que el producto $C^{T}C \in \mathbb{Z}^{XY\times XY}$, por lo cual, dado que $X\times Y$ es el número de píxeles de las imágenes, es de esperar que la matriz de covarianza $S$ sea de una dimensión excesivamente grande. Por ende, el objetivo es calcular las \textit{eigenfaces} de una forma computacionalmente más económica.
+	\paragraph{} El siguiente paso en el método de \textbf{PCA} es el cálculo de los autovectores de la matriz de covarianza $S = C^{T}C$. Dichos autovectores son también referidos en la bibliografía por el nombre de \textit{autocaras o eigenfaces}. Es preciso observar que el producto $C^{T}C \in \mathbb{Z}^{XY\times XY}$, por lo cual, dado que $X\times Y$ es el número de píxeles de las imágenes, es de esperar que la matriz de covarianza $S$ sea de una dimensión excesivamente grande. Por ende, el objetivo es calcular las \textit{eigenfaces} de una forma computacionalmente más económica.
 	
 	\paragraph{} Nótese que la dimensión de la matriz $\widetilde{S} = CC^{T}$  $(\widetilde{S} \in \mathbb{Z}^{MN \times MN})$ está intrínsecamente asociada al tamaño de la muestra, ya sea del número de individuos y/o del de caras por individuo. Estos valores serán, en la mayoría de los casos, de una magnitud muy inferior a la cantidad de píxeles de las imágenes y, además, las posibilidades de manipularlos son mucho más amplias. A modo de ejemplo, las imágenes de la base de datos de prueba sugerida por la Cátedra \cite{dbf} tienen una dimensión de $92 \times 112$, por lo que la matriz de covarianza $S \in \mathbb{Z}^{10304\times 10304}$. Por el contrario, $\widetilde{S} \in \mathbb{Z}^{400 \times 400}$, en el caso de tomar todas las fotos disponibles de cada individuo.
 	
@@ -99,7 +99,7 @@
 	
 	\paragraph{} Siendo $P_{k}$ la k-ésima fila de $C$. Luego, una opción es promediar los $M$ $\Omega_{k_{s}}$ de cada individuo de la base de datos, así logrando un valor medio $\Omega_{M_{p}}$ por cada ejemplar $1 \le p \le N$, obteniendo un vector que defina la \textit{clase} de un individuo en particular. Otra posibilidad es no realizar ningún promedio alguno, entregando a la función clasificadora tantos vectores $\Omega$ como cantidad de imágenes por individuo haya. En la sección de resultados se analizarán las dos posibilidades en detalle.  
 	
-	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
+	\paragraph{} Luego, para una imagen de entrada $Z$ a clasificar $($dada en forma de columna$)$, se debe computar el peso de las \textit{eigenfaces} con respecto a la misma como se describe en $(5)$, teniendo la precaución de \textit{centralizar} la entrada, es decir, hacer la resta $\widetilde{Z} = Z - M^{T}$. Luego, reemplazando $P_{k}^{T}$ por $\widetilde{Z}$ en dicha ecuación, se calcula el vector $\Omega_{Z}$.
 	
 	\paragraph{} Finalmente, se toma la distancia euclídea $\epsilon_{p} = \lVert \Omega_{Z} - \Omega_{M_{p}} \rVert$ $-$ considerando el caso en el que los vectores $\Omega$ se promedien $-$ para cada $1 \le p \le N$, y se dice que el $p$ que corresponda al $\epsilon_{p}$ mínimo determina la clase a la que pertenece la imagen de entrada. 
 	
@@ -213,7 +213,7 @@
 		Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} &= Q_{k}^{-1}Q_{k}R_{k}Q_{k}  \\ &= R_{k}Q_{k}
 	\end{align}
 	
-	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$ en $(7)$:
+	\paragraph{} Luego, reemplazando $R_{k}Q_{k}$ en $(4)$:
 	
 	\begin{align}
 		A_{k+1} &= Q_{k}^{-1}(A_{k} - \kappa_{k}I)Q_{k} + \kappa_{k}I \\ &= Q_{k}^{-1}A_{k}Q_{k} - \kappa_{k}Q_{k}^{-1}Q_{k} + \kappa_{k}I  \\ &= Q_{k}^{-1}A_{k}Q_{k}  
@@ -241,7 +241,7 @@
 		\caption{Comparación en tiempo de ejecución entre diferentes tipos de \textit{shifts}.}
 	\end{table}
 	
-	\paragraph{} Contrariamente a lo que pudo haberse esperado, los corrimientos de Wilkinson implementados no solo demostraron no ser universalmente superiores a los corrimientos \textit{triviales}, sino que en algunos casos tuvieron una \textit{performance} incluso inferior al del algoritmo sin ningún tipo de corrimiento. Uno de los posibles motivos de este resultado podría estar relacionado a que el cómputo de los corrimientos de Wilkinson conlleva una serie de operaciones de punto flotante, tales como raíces cuadradas y divisiones. Por el contrario, los corrimientos \textit{triviales} son de cálculo inmediato.
+	\paragraph{} Contrariamente a lo que pudo haberse esperado, los corrimientos de Wilkinson implementados no solo exhibieron una \textit{performance} inferior que la de los corrimientos \textit{triviales}, sino que en algunos casos su desempeño fue incluso inferior al del algoritmo sin ningún tipo de corrimiento. Uno de los posibles motivos de este resultado podría estar relacionado a que el cómputo de los corrimientos de Wilkinson conlleva una serie de operaciones de punto flotante, tales como raíces cuadradas y divisiones. Por el contrario, los corrimientos \textit{triviales} son de cálculo inmediato.
 	
 	\paragraph{} Considerando los resultados expuestos, se optó finalmente por utilizar los \textit{shifts} \textit{triviales}.
 	
@@ -302,7 +302,7 @@
 	
 	\paragraph{} Se ha evaluado otro método para realizar descomposiciones QR, el cual involucra implementar \textit{rotaciones de Givens} para cada celda por debajo de la diagonal principal. Este método exhibe una mayor complejidad algorítmica, ya que hay que iterar sobre los $O(N^{2})$ casilleros por debajo de la diagonal, e introducir un similar orden de rotaciones, efectuando un idéntico número de multiplicaciones matriciales, una operación de orden cúbico. Con los reflectores de Householder, se recorren a lo sumo las $M-1$ columnas de la matriz, introduciendo la cantidad deseada de $0_{s}$ por columna en cada iteración.
 	
-	\begin{table}[]
+	\begin{table}[!htb]
 		\centering
 		\label{qrcmp}
 		\begin{tabular}{@{}lll@{}}
@@ -318,7 +318,7 @@
 		\caption{Comparación entre implementaciones de descomposición QR $($segundos$)$.}
 	\end{table}
 	
-	\paragraph{} En \ref{qrcmp} se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
+	\paragraph{} En $2$ se evidencia cómo incluso a dimensiones pequeñas de la matriz, la diferencia en tiempo de ejecución entre las implementaciones es sumamente apreciable.
 	
 	\subsection{Matriz de Hessemberg}
 	
