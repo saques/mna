@@ -1,18 +1,16 @@
 from lib import *
 import numpy as np
 import cv2
-from sklearn import svm
+from parameters import *
 
 '''
 Facial Recognition using KPCA
 '''
 
 # Constants
-IMG_HEIGHT = 112
-IMG_WIDTH = 92
 areasize = IMG_HEIGHT * IMG_WIDTH
 
-personsno = 5
+personsno = NUM_INDIVIDUALS
 tstperper = 5
 trnperper = 5
 tstno = tstperper * personsno
@@ -28,7 +26,7 @@ class KPCA:
         self.eigenvectors = []
         self.K = None
         self.db = None
-        self.f = 1
+        self.classes = None
 
     def image_proyection_from_path(self, img_path):
         # Load training and images and their classes
@@ -44,7 +42,9 @@ class KPCA:
 
     def project_normalized_images(self, imgs):
         # Project test images
-        onesM_tst = np.ones([tstno, trnno]) / trnno
+        trnno = self.db.shape[0]
+
+        onesM_tst = np.ones([imgs.shape[0], trnno]) / trnno
         oneM = np.ones([trnno, trnno]) / trnno
         Ktest = (np.dot(imgs, self.db.T) / trnno + 1) ** self.degree
         Ktest = Ktest - np.dot(onesM_tst, self.K) - np.dot(Ktest, oneM) + np.dot(onesM_tst, np.dot(self.K, oneM))
@@ -54,6 +54,8 @@ class KPCA:
         if self.db is None:
            print "No database set"
            return None
+
+        trnno = self.db.shape[0]
 
         # Polynomial kernel
         K = (np.dot(self.db, self.db.T) / trnno + 1) ** self.degree
@@ -72,10 +74,11 @@ class KPCA:
         self.eigenvectors = eigenvectors
 
         # Project training images
-        return np.dot(K.T, eigenvectors)
+        return np.dot(K.T, eigenvectors), self.classes
 
     def get_default_db(self, imperper):
         return load_images_and_get_class(imperper, personsno)
 
-    def set_db(self, db):
+    def set_db(self, db, classes):
         self.db = np.divide(np.add(db, -127.5), 127.5)
+        self.classes = classes
