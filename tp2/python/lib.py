@@ -35,7 +35,3 @@ def fft_ct(x):
     if not (N & (N-1)) == 0:
         raise ValueError("Length must be a power of 2")
     return fft_ct_1(x, N)
-
-arr = np.random.rand(8)
-
-print np.allclose(fft_ct(arr),np.fft.fft(arr))
