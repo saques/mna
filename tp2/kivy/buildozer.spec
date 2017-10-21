@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = OpenCVTest
+title = HeartRate
 
 # (str) Package name
-package.name = camex
+package.name = heartrate
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = com.kivy
@@ -69,10 +69,10 @@ orientation = portrait
 #
 
 # (bool) Indicate if the application should be fullscreen or not
-fullscreen = 1
+fullscreen = 0
 
 # (list) Permissions
-android.permissions = CAMERA
+android.permissions = CAMERA,FLASHLIGHT
 
 # (int) Android API to use
 #android.api = 19
