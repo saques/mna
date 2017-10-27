@@ -80,18 +80,3 @@ def bit_reverse_1(ans, x, pos, val, n, inc, N):
 
 
 
-q = np.random.rand(32768/2/2,)
-
-t0 = time.time()
-fft_ct(q)
-print "Recursive: %f" % (time.time()-t0)
-
-t0 = time.time()
-ifft(q)
-print "Iterative: %f" % (time.time()-t0)
-
-t0 = time.time()
-np.fft.fft(q)
-print "Numpy: %f" % (time.time()-t0)
-
-# print np.allclose(fft_ct(q),ifft(q)) and np.allclose(ifft(q),np.fft.fft(q))

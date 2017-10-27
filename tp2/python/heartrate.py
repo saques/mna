@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from lib import fft_ct
+from scipy.fftpack import fftfreq
 
 cap = cv2.VideoCapture('sample1.mp4')
 
@@ -22,18 +23,14 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps    = cap.get(cv2.CAP_PROP_FPS)
 
 r = np.zeros((1,length))
-g = np.zeros((1,length))
-b = np.zeros((1,length))
 
 k = 0
 while(cap.isOpened()):
     ret, frame = cap.read()
     
     if ret == True:
-        r[0,k] = np.mean(frame[330:360,610:640,0])
-        g[0,k] = np.mean(frame[330:360,610:640,1])
-        b[0,k] = np.mean(frame[330:360,610:640,2])
-#        print(k)
+        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        r[0,k] = np.mean(frame[330:360, 610:640])
     else:
         break
     k = k + 1
@@ -42,30 +39,25 @@ while(cap.isOpened()):
 cap.release()
 cv2.destroyAllWindows()
 
-n = 1024
-f = np.linspace(-n/2,n/2-1,n)*fps/n
+n = 512
+f = (np.linspace(-n/2,n/2-1,n)*fps/n)*60
 
 r = r[0,0:n]-np.mean(r[0,0:n])
-g = g[0,0:n]-np.mean(g[0,0:n])
-b = b[0,0:n]-np.mean(b[0,0:n])
+
 
 R = np.abs(np.fft.fftshift(fft_ct(r)))**2
-G = np.abs(np.fft.fftshift(fft_ct(g)))**2
-B = np.abs(np.fft.fftshift(fft_ct(b)))**2
-
-plt.plot(60*f,R)
-plt.xlim(0,200)
 
 
+filter = np.zeros(n)
+inc = (fps/n)*60
+filter[int(n/2+50/inc):int(n/2+110/inc)] = 1
+R *= filter
 
-plt.plot(60*f,G)
+plt.plot(f,R)
 plt.xlim(0,200)
 plt.xlabel("freq. [1/min.]")
 
 
-plt.plot(60*f,B)
-plt.xlim(0,200)
-
-print ("Heart rate: %f ppm"  % (abs(f[np.argmax(G)])*60))
+print ("Heart rate: %f bpm"  % abs(f[np.argmax(R)]))
 
 plt.show()
