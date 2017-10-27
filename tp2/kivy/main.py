@@ -52,20 +52,21 @@ def fft_ct(x):
 		raise ValueError("Length must be a power of 2")
 	return fft_ct_1(x, N)
 
-def compute_hr(n, fps, r, g, b):
-	f = np.linspace(-n/2,n/2-1,n)*fps/n
+def compute_hr(n, fps, r):
+	f = (np.linspace(-n/2,n/2-1,n)*fps/n)*60
 
 	r = r[0,0:n]-np.mean(r[0,0:n])
-	g = g[0,0:n]-np.mean(g[0,0:n])
-	b = b[0,0:n]-np.mean(b[0,0:n])
 
 	R = np.abs(np.fft.fftshift(fft_ct(r)))**2
-	G = np.abs(np.fft.fftshift(fft_ct(g)))**2
-	B = np.abs(np.fft.fftshift(fft_ct(b)))**2
 
-	print(abs(f[np.argmax(G)])*60)
+	filter = np.zeros(n)
+	inc = (fps/n)*60
+	filter[int(n/2+50/inc):int(n/2+110/inc)] = 1
+	R *= filter
 
-	return abs(f[np.argmax(G)])*60
+	print(abs(f[np.argmax(R)]))
+
+	return abs(f[np.argmax(R)])
 
 
 class CameraBundle:
@@ -81,27 +82,26 @@ class CameraBundle:
 	def capture(self, n):
 
 		r = np.zeros((1,n))
-		g = np.zeros((1,n))
-		b = np.zeros((1,n))
 		
 		self._flash_on()		
 
 		for i in range(0,n):
 			print(i)
 			frame = self.cam.read_frame()
-			r[0,i] = np.mean(frame[210:240,290:320,0])
-			g[0,i] = np.mean(frame[210:240,290:320,1])
-			b[0,i] = np.mean(frame[210:240,290:320,2])
-			
-			print("%f %f %f" % (r[0,i], g[0,i], b[0,i]))
-			
+			frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+			r[0,i] = np.mean(frame[210:240,290:320])
+		
 		self._flash_off()
 
-		return r, g, b
+		return r
 
 	def _flash_on(self):
 		p = self.caminstance.getParameters()
 		p.setFlashMode(Parameters.FLASH_MODE_TORCH)
+		p.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO)
+		p.setFocusMode(Parameters.FOCUS_MODE_INFINITY)
+		p.setColorEffect(Parameters.EFFECT_NONE)
+		p.setAntibanding(Parameters.ANTIBANDING_OFF)
 		self.caminstance.setParameters(p)
 
 	def _flash_off(self):
@@ -120,8 +120,8 @@ class CameraClick(BoxLayout):
 	def capture(self):
 		n = 1024
 		fps = self.cb.fps()
-		r, g, b = self.cb.capture(n)
-		self.ids.rate.text = "Rate: %f ppm." % (compute_hr(n, fps, r, g, b))
+		r = self.cb.capture(n)
+		self.ids.rate.text = "Rate: %f bpm." % (compute_hr(n, fps, r))
 
 
 
