@@ -5,7 +5,7 @@ kivy.require('1.10.0')
 
 import numpy as np
 import cv2
-import time
+from time import sleep
 
 
 from kivy.app import App
@@ -21,13 +21,13 @@ Builder.load_string('''
 	orientation: 'vertical'
 	Label:
 		id: rate
-		text: 'Rate: '
+		text: 'Press Capture to start'
 		height: '48dp'
 	Button:
 		text: 'Capture'
 		size_hint_y: None
 		height: '48dp'
-		on_press: root.capture()
+		on_press: app.capture()
 ''')
 
 #Cooley-Tukey implementation (only N = 2^j for some j)
@@ -61,7 +61,7 @@ def compute_hr(n, fps, r):
 
 	filter = np.zeros(n)
 	inc = (fps/n)*60
-	filter[int(n/2+50/inc):int(n/2+110/inc)] = 1
+	filter[int(n/2+55/inc):int(n/2+110/inc)] = 1
 	R *= filter
 
 	print(abs(f[np.argmax(R)]))
@@ -80,33 +80,38 @@ class CameraBundle:
 		return self.cam.fps
 
 	def capture(self, n):
+		frames = []
+		st = 1.0/self.cam.fps
 
-		r = np.zeros((1,n))
-		
 		self._flash_on()		
-
+		
 		for i in range(0,n):
 			print(i)
-			frame = self.cam.read_frame()
-			frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-			r[0,i] = np.mean(frame[210:240,290:320])
+			frames.append(self.cam.grab_frame())
+			sleep(st)
 		
 		self._flash_off()
 
+		return frames
+
+	def decode(self,frames):
+		r = np.zeros((1,len(frames)))
+		for i in range(0,len(frames)):
+			frame = self.cam.decode_frame(frames[i])
+			frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+			r[0,i] = np.mean(frame[220:240,300:320])
 		return r
 
 	def _flash_on(self):
 		p = self.caminstance.getParameters()
 		p.setFlashMode(Parameters.FLASH_MODE_TORCH)
-		p.setWhiteBalance(Parameters.WHITE_BALANCE_AUTO)
-		p.setFocusMode(Parameters.FOCUS_MODE_INFINITY)
-		p.setColorEffect(Parameters.EFFECT_NONE)
-		p.setAntibanding(Parameters.ANTIBANDING_OFF)
+		p.setExposureCompensation(-1)
 		self.caminstance.setParameters(p)
 
 	def _flash_off(self):
 		p = self.caminstance.getParameters()
 		p.setFlashMode(Parameters.FLASH_MODE_OFF)
+		p.setExposureCompensation(0)
 		self.caminstance.setParameters(p)
 		
 
@@ -115,19 +120,30 @@ class CameraClick(BoxLayout):
 
 	def __init__(self):
 		super(CameraClick, self).__init__()
-		self.cb = CameraBundle()
 
-	def capture(self):
-		n = 1024
-		fps = self.cb.fps()
-		r = self.cb.capture(n)
-		self.ids.rate.text = "Rate: %f bpm." % (compute_hr(n, fps, r))
-
+	def change_text(self,text):
+		self.ids.rate.text = text
 
 
 class TestCamera(App):
 
 	def build(self):
-        	return CameraClick()
+		self.box = CameraClick()
+		self.cb = CameraBundle()
+        	return self.box
+
+	def capture(self):
+		n = 1024
+
+		fps = self.cb.fps()
+
+		frames = self.cb.capture(n)
+
+		r = self.cb.decode(frames)
+
+		bpm = compute_hr(n, fps, r)
+
+		self.box.change_text("Rate: %f bpm." % (bpm))
+
 
 TestCamera().run()

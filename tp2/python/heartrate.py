@@ -11,7 +11,7 @@ import cv2
 from lib import fft_ct
 from scipy.fftpack import fftfreq
 
-cap = cv2.VideoCapture('sample1.mp4')
+cap = cv2.VideoCapture('sample8.mp4')
 
 if not cap.isOpened():
     print("No lo pude abrir")

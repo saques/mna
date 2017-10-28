@@ -6,7 +6,7 @@ import cv2
 from lib import fft_ct
 
 
-cap = cv2.VideoCapture('sample5.mp4')
+cap = cv2.VideoCapture('sample6.mp4')
 
 if not cap.isOpened():
     print("No lo pude abrir")
@@ -33,8 +33,8 @@ while (cap.isOpened()):
     ret, frame = cap.read()
 
     if ret == True:
-        #frame[:, :, 0] -= frame[:, :, 0]
-        frame[:, :, 1] -= frame[:, :, 1]
+        frame[:, :, 0] -= frame[:, :, 0]
+        #frame[:, :, 1] -= frame[:, :, 1]
         frame[:, :, 2] -= frame[:, :, 2]
         out.write(frame)
     else:
