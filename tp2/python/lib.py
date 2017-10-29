@@ -78,5 +78,14 @@ def bit_reverse_1(ans, x, pos, val, n, inc, N):
     bit_reverse_1(ans, x, pos-n/2, val+inc, n/2, inc*2, N)
     bit_reverse_1(ans, x, pos+n/2, val+inc*2, n/2, inc*2, N)
 
+N = 2**13
+print N
+q = np.random.rand(N,)
 
+t0 = time.time()
+fft_ct(q)
+print "Recursive: %f" % (time.time()-t0)
 
+t0 = time.time()
+ifft(q)
+print "Iterative: %f" % (time.time()-t0)

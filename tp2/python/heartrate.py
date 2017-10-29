@@ -9,9 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from lib import fft_ct
-from scipy.fftpack import fftfreq
 
-cap = cv2.VideoCapture('sample8.mp4')
+cap = cv2.VideoCapture('5.mp4')
 
 if not cap.isOpened():
     print("No lo pude abrir")
@@ -22,6 +21,9 @@ width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps    = cap.get(cv2.CAP_PROP_FPS)
 
+print width
+print height
+
 r = np.zeros((1,length))
 
 k = 0
@@ -30,7 +32,8 @@ while(cap.isOpened()):
     
     if ret == True:
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-        r[0,k] = np.mean(frame[330:360, 610:640])
+        r[0,k] = np.mean(frame[height/2-200:height/2:5, width/2-200:width/2:5])
+        #r[0, k] = np.mean(frame)
     else:
         break
     k = k + 1
@@ -39,7 +42,7 @@ while(cap.isOpened()):
 cap.release()
 cv2.destroyAllWindows()
 
-n = 512
+n = 1024
 f = (np.linspace(-n/2,n/2-1,n)*fps/n)*60
 
 r = r[0,0:n]-np.mean(r[0,0:n])
