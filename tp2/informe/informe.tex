@@ -116,7 +116,7 @@
 		\label{3030}
 	\end{table}
 	
-	\paragraph{} Como podrá verse en el Cuadro \ref{3030}, la aproximación con menor error relativo al promedio ha sido la de la muestra correspondiendo al dedo índice sin cubrir el \textbf{LED}. 
+	\paragraph{} Como podrá verse en el Cuadro \ref{3030}, la aproximación con menor error relativo al promedio ha sido la de la muestra correspondiendo al dedo índice sin cubrir el \textbf{LED}. Por otro lado, la que mayor error relativo parecería mostrar es el caso del antebrazo.
 	
 	\subsection{Promedio de toda la imagen}
 	
@@ -138,7 +138,7 @@
 		\label{prom}
 	\end{table}
 	
-	\paragraph{} Utilizando el método anterior, el error relativo en la muestra 5 era comparable al de las otras muestras. En el Cuadro \ref{prom}, podrá verse que dicho error, con este método, excede con creces el de las otras muestras. Esto indicaría que utilizar el \textbf{LED} podría ser un requisito no omisible a la hora de aproximar el ritmo cardíaco.
+	\paragraph{} Utilizando el método anterior, el error relativo en la muestra 5 era comparable al de las otras muestras. En el Cuadro \ref{prom}, podrá verse que dicho error, con este método, excede con creces el de las otras muestras. Esto indicaría que utilizar el \textbf{LED} podría ser un requisito indispensable a la hora de aproximar el ritmo cardíaco.
 	
 	\begin{figure}[H]
 		\centering
@@ -151,7 +151,7 @@
 	
 	\subsection{Región cuadrada con vértice en el centro, interpolando puntos}
 	
-	\paragraph{} Para este último caso, se ha tomado una región cuadrada de $200X200$ con vértice en el centro de la imagen, interpolando de a $5$ píxeles. El objetivo de esto es maximizar la superficie cubierta tomando una cantidad similar de píxeles que en el primer caso. Dado que se está filmando con la lente inmediatamente sobre la piel, la distancia real entre los píxeles es ínfima. Luego, interpolar muy probablemente de una aproximación cercana al verdadero promedio de todos los píxeles de la región.
+	\paragraph{} Para este último caso, se ha tomado una región cuadrada de $200X200$ con vértice en el centro de la imagen, interpolando de a $5$ píxeles. El objetivo de esto es maximizar la superficie cubierta, a la vez que se toma una cantidad similar de píxeles que en el primer caso. Dado que se está filmando con la lente inmediatamente sobre la piel, la distancia real entre los píxeles es ínfima. Luego, al interpolar muy probablemente se obtenga una aproximación cercana al verdadero promedio de todos los píxeles de la región.
 	
 	\begin{table}[H]
 		\centering
@@ -179,8 +179,28 @@
 	
 	\paragraph{} Tal como se ha observado en el método de promediado anterior, en la muestra 3, tras una inspección del gráfico de frecuencias, se observan dos picos de magnitud comparable. En este caso, el valor de la segunda frecuencia más representativa es de $77.419$, lo que representaría un $|Error| = 1.95\%$, el menor de todos los errores relativos obtenidos hasta el momento. 
 	
-
-
+	\subsection{Nueva muestra en el antebrazo}
+	
+	\paragraph{} En los apartados anteriores, se ha notado una característica particular en la gráfica de frecuencias para los vídeos tomados sobre el antebrazo. Se ha considerado oportuno indagar sobre dicho punto, tomando 2 nuevas mediciones sobre dicha parte del cuerpo del mismo sujeto de pruebas. A continuación se exhiben las gráficas de frecuencias:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8cm]{sample6-c200_200_5.png}
+		\caption{Muestra 6: proximidad entre picos}
+		\label{6prox}
+	\end{figure}
+	
+	\paragraph{} Como podrá notarse en la Figura \ref{6prox}, el caso parecería ser idéntico al de la muestra 3: el pico mayor se encuentra en la frecuencia $93.079$, y el que le sigue, en $77.4194$.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8cm]{sample7-c200_200_5.png}
+		\caption{Muestra 6: proximidad entre picos}
+		\label{7nprox}
+	\end{figure}
+	
+	\paragraph{} Sin embargo, en la Figura \ref{7nprox}, la estimación obtenida es de $61.535$, y el fenómeno que se observó antes es inexistente. Luego, se podría concluir que lo antes observado responde al azar producto del \textit{ruido} al tomar la filmación. Además, dada la falta de precisión en todas las medidas en las que se utilizó el antebrazo, podría decirse que dicho sector del cuerpo no es apropiada para estimaciones certeras.
+	
 	
 	\newpage
 	\begin{thebibliography}{9}
