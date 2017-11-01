@@ -2,9 +2,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{geometry}
-\geometry{a4paper,margin=0.8in}
+\geometry{a4paper,top=0.7in, left=0.5in, right=0.5in, bottom=0.5in}
 \usepackage{amsmath}
 \usepackage{listings}
+
+
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{url}
@@ -15,6 +17,7 @@
 \pagestyle{fancy}
 \cfoot{Página \thepage}
 \counterwithin*{equation}{subsection}
+\newtheorem{theorem}{Propiedad}
 
 \begin{document}
 	\title{Medición del ritmo cardíaco por medios ópticos\\ 
@@ -45,6 +48,191 @@
 	
 	\paragraph{Palabras clave:}
 	
+	\section{Transformada de Fourier}
+	
+	\subsection{Series de Fourier}
+	
+	\paragraph{} Una serie de Fourier permite descomponer cualquier función periódica en una suma, finita o no, de senos y cosenos.
+	
+	\begin{align}
+		f(x) = \frac{a_{0}}{2} + \sum^{\infty}_{n=1}a_{n}\cos(nx) + \sum^{\infty}_{n=1}b_{n}\sin(nx)
+	\end{align}
+	
+	\paragraph{} Donde $a_{n}$ y $b_{n}$ son los \textbf{coeficientes de Fourier} de la serie de Fourier de la función $f(t)$.
+	
+	\paragraph{} Con el uso de propiedades trigonométricas, se puede llegar a una expresión reducida:
+	
+	\begin{align}
+		f(x) = \frac{A_{0}}{2} + \sum_{n=1}^{N}A_{n}\cdot\sin(\frac{2\pi nx}{P} + \phi_{n}) \\
+		A_{n} = \sqrt{a_{n}^{2}+b_{n}^{2}} \\
+		\phi_{n} = \arctan_{2}(a_{n},b_{n})
+	\end{align}
+	
+	\paragraph{} Con $N\ge1$, siendo $f(x)$ integrable en un intervalo $\left[x_{0}, x_{0}+P\right]$. Se puede notar que $A_{n}$ representa el peso del n-ésimo seno dentro de la función periódica $f(x)$.
+	
+	\subsection{Transformada continua de Fourier}
+	
+	\paragraph{} La transformada continua de Fourier $($\textbf{TCF}$)$ puede ser entendida como una extensión de las series de Fourier, pero donde el período de la función puede tender a infinito. La transformada de Fourier permite determinar cuál es el \textit{grado de presencia} de cierta frecuencia en una función o señal, es decir, permite transformar un dominio temporal a uno de frecuencias. Nótese que esto no se limita a funciones variables en el tiempo, pero con objetivo de unificar el vocabulario se le llama dominio temporal al dominio de la función original. La transformada de Fourier se define de la siguiente manera:
+	
+	\begin{align}
+		\hat{f}(\xi) = \int_{-\infty}^{\infty} f(x)\cdot\exp^{-2\pi i x\xi} dx
+	\end{align}
+	
+	\paragraph{} Con $x$ perteneciendo al dominio de los tiempos, y $\xi$ al de las frecuencias.
+	
+	\paragraph{} Utilizando la fórmula de Euler, se ve que la transformada de Fourier puede ser expresada con senos y cosenos:
+	
+	\begin{align*}
+		\exp^{ix}=\cos x + i \sin x
+	\end{align*}
+	
+	\paragraph{} De forma similar a las series de Fourier, donde el valor $A_{n}$ representaba el peso del n-ésimo seno, la transformada de Fourier permite encontrar cada uno de los componentes sinusoidales con frecuencia $\xi$ y su respectivo peso, permitiendo \textit{reconstruir} la función original.
+	
+	\paragraph{} A continuación sigue un ejemplo ilustrativo del proceso.
+	
+	\paragraph{} En primer lugar, se considera una función $f(t)$, es decir, con dominio temporal $t \in \left[0,2.5\right]$:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=8cm]{ft.png}
+		\caption{Alguna función con dominio temporal}
+		\label{ft}
+	\end{figure}
+	
+	\paragraph{} Luego, cada punto $($o \textit{vector}$)$, puede proyectarse en un sistema de coordenadas con los ejes \textit{Reales} e \textit{Imaginarios} con una frecuencia $\xi$ dada:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=5cm]{imre.png}
+		\caption{Ejes coordenados}
+		\label{imre}
+	\end{figure}
+	
+	\paragraph{} Con $\Phi=2\pi t\xi$ y $D=f(t)$
+
+	\paragraph{} Proyectando cada punto de $f$ para todo $t$ en el dominio de la muestra, fijando distintas frecuencias $\xi$, obtendríamos, para este ejemplo, los siguientes resultados:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=5cm]{f1-5.png}
+		\caption{Ejemplo para $\xi = 1.509$ }
+		\label{f1-5}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=5cm]{f3-0.png}
+		\caption{Ejemplo para $\xi = 3.0007$ }
+		\label{f3-0}
+	\end{figure}
+	
+	\paragraph{} Las figuras \ref{f1-5} y \ref{f3-0} corresponden a la siguiente expresión para alguna frecuencia $\xi$ dada:
+	
+	\begin{align}
+		f(t)\exp(-2i\pi t \xi)
+	\end{align}
+	
+	\paragraph{}Finalmente, para obtener el peso de la función sinusoidal con frecuencia $\xi$, se suman los módulos de los vectores de la proyección. Luego, se obtiene una función $\hat{f}(\xi)$ que representa el peso de cada frecuencia $\xi$ en la función $f(t)$ dependiente del tiempo.
+	
+	\subsection{Transformada discreta de Fourier}
+	
+	\paragraph{} La transformada discreta de Fourier $($\textbf{TDF}$)$ guarda la misma esencia que la continua. Esta transformada permite representar el dominio de las frecuencias de una señal a partir del muestreo de una señal continua cada intervalos de tiempo constantes. La expresión de la \textbf{TDF} es la siguiente:  
+	
+	\begin{align}
+		X_{k} = \sum_{n=0}^{N-1}x_{n}\cdot\exp^{-\frac{2\pi i}{N}k n}
+	\end{align}
+	
+	\paragraph{} Lo cual transforma una secuencia de $N$ números complejos $x_{0},x_{1},\dots,x_{N-1}$, en otra secuencia de sobre el mismo cuerpo $X_{0},X_{1},\dots,X_{N-1}$. Aquí $0\le k\le N-1$. La interpretación es que $\hat{f}(\xi_{k})=X_{k}$.
+	
+	\paragraph{} Se puede notar que la expresión de la \textbf{TDF} es muy similar a la de la \textbf{TCF}, con la única diferencia de que la primera utiliza una sumatoria en vez de una integral, ya que en este caso se está tratando con una cantidad discreta de valores. Por ende, salvando esta diferencia, la interpretación gráfica del proceso es análogo al caso anterior.
+	
+	\subsubsection{Algoritmo por fuerza bruta}
+	
+	\paragraph{} El algoritmo por fuerza bruta es, en esencia, lo que su nombre indica: utilizar la expresión de la \textbf{TDF} exhibida más arriba para realizar el cálculo de la transformada. Esto implica que, por cada $X_{k}$, se realiza una sumatoria sobre $N$ productos, por lo que el orden algorítmico de esta implementación es $O(N^{2})$.
+	
+	\subsubsection{\textit{Fast Fourier Transform}}
+	
+	\paragraph{} Una versión mejorada de la implementación de la \textbf{FFT}, propuesta por Cooley y Tukey $($1965$)$, permite reducir el orden computacional a $O(n\cdot log n)$. La idea se basa en el aprovechamiento de las simetrías de $\exp^{-\frac{2\pi i k n}{N}}$ en la expresión de la \textbf{TDF}.
+	
+	\paragraph{} Sea $W_{n} = \exp^{-\frac{2\pi i}{N}}$. Luego, puede verse que:
+	
+	\begin{align}
+		W_{n}^{kn} = \exp^{-2\pi i k} = 1
+	\end{align}
+	
+	Luego, se tienen las siguientes propiedades:
+	
+	\begin{theorem}[Simetría conjugada compleja]
+		\begin{align*}
+			W_{n}^{k(N-n)} = W_{n}^{-kn} = (W_{n}^{kn})^{*}
+		\end{align*}
+	\end{theorem}
+	
+	\begin{theorem}[Periodicidad en $n$ y $k$]
+		\begin{align*}
+			W_{n}^{kn} &= W_{n}^{k(N+n)} \\
+			&= W_{n}^{(k+N)n}
+		\end{align*}
+	\end{theorem}
+	
+	\paragraph{} La transformada rápida de Fourier se basa en el concepto de \textit{divide and conquer}: asumiendo la cantidad de entradas $N = 2^{m}$ se subdivide el problema en dos de tamaño $\frac{N}{2}$ a partir de los cuales es posible calcular el primero. El enfoque más común es dividir el cálculo de la transformada de Fourier según índices pares e impares:
+	
+	\begin{align}
+		X_{k} &= \sum_{k=0}^{N-1} x_{n}W_{N}^{kn} \\
+		&= \sum_{n\quad par}x_{n}W_{N}^{kn} + \sum_{n\quad impar}x_{n}W_{N}^{kn} \\
+		&= \sum_{r=0}^{\frac{N}{2}-1} x_{2r}W_{N}^{k2r} + \sum_{r=0}^{\frac{N}{2}-1}x_{2r+1}W_{N}^{k(2r+1)} \\
+		&= \sum_{r=0}^{\frac{N}{2}-1}x_{2r}(W_{N}^{2})^{kr} + W_{N}^{k}\sum_{r=0}^{\frac{N}{2}-1}x_{2r+1}(W_{N}^{2})^{kr}
+	\end{align}
+	
+	\paragraph{} Como $W_{N}^{2} = \exp^{-\frac{2\pi i}{N}} = \exp^{-\frac{2\pi i}{\frac{N}{2}}} = W_{\frac{N}{2}}$.
+	
+	\paragraph{} Sea $X_{p_{k}}$ la \textbf{TDF} para las muestras pares y $X_{i_{k}}$ para las impares. Esto implica que se pueden calcular de forma independiente $X_{p_{k}}$ y $X_{i_{k}}$, ambas con $\frac{N}{2}$ muestras en vez de $N$, luego combinando los resultados para obtener $X_{k}$.
+	
+	\paragraph{} Nótese que, gracias a la Propiedad 2, $X_{p_{k+\frac{N}{2}}} = X_{p_{k}}$ $($ídem para $X_{i})$ Luego:
+	
+	\begin{equation}
+	X_{k}=
+	\begin{cases}
+	X_{p_{k}}+W_{N}^{k}X_{i_{k}}, & \text{si}\ 0\le k< \frac{N}{2} \\
+	X_{p_{k-\frac{N}{2}}}+W_{N}^{k}X_{i_{k-\frac{N}{2}}}, & \text{si}\ \frac{N}{2}\le k < N
+	\end{cases}
+	\end{equation}
+	
+	\paragraph{} También se puede obtener:
+	
+	\begin{align*}
+		X_{k} = X_{p_{k}} + W_{N}^{k}X_{i_{k}} \\
+		X_{k+\frac{N}{2}} = X_{p_{k}} - W_{N}^{k}X_{i_{k}}
+	\end{align*}
+	
+	\paragraph{} A partir de estos resultados se puede realizar un algoritmo recursivo para calcular la \textbf{TDF} con orden computacional $O(n\cdot \log n)$. A continuación, presentamos el pseudo-código de la transformada rápida de Fourier siguiendo este método:
+	  
+	  
+	\begin{lstlisting}[frame=single]  % Start your code-block
+	
+	def FFT(X):
+	  N = len(X)
+	  if N > 1:
+	    even = X[::2]
+	    odd = X[1::2]
+	    FFT(even)
+	    FFT(odd)
+	    for k in range(N/2):
+	      e = X[k]
+	      o = X[k+N/2]
+	      w = exp(-2*pi*1j/n)
+	      X[k] = e + w * o
+	      X[k+N/2] = e - w * o
+	  return X
+	  
+	\end{lstlisting}
+	
+	
+	\section{Método}
+	
+	\paragraph{} TODO AFTER LUNCH BREAK
+	
+
 	\section{Resultados}
 	
 	\paragraph{} A continuación, se exhibirán los tiempos de ejecución entre las diferentes implementaciones del algoritmo \textit{fft} realizadas, como así también de los resultados obtenidos a la hora de calcular el ritmo cardíaco de un individuo.
@@ -68,7 +256,7 @@
 		\label{fftcmp}
 	\end{table}
 	
-	\paragraph{} Como podrá verse en la Tabla \ref{fftcmp}, la implementación iterativa del algoritmo \textit{Cooley-Tukey} es claramente del mismo orden algorítmico, pero en torno a $3.3$ veces más rápido. Se arguye que la mejora en la \textit{performance} proviene de la eliminación del \textit{overhead} generado por los \textit{stackframes} generados por la implementación recursiva en cada llamada.
+	\paragraph{} Como podrá verse en la Tabla \ref{fftcmp}, la implementación iterativa del algoritmo \textit{Cooley-Tukey} es claramente del mismo orden algorítmico, pero en torno a $3.3$ veces más rápido. Se arguye que la mejora en la \textit{performance} proviene de la eliminación del \textit{overhead} generado por los \textit{stackframes} producidos por la implementación recursiva en cada llamada.
 	
 	
 	\subsection{Mediciones del ritmo cardíaco}
@@ -202,11 +390,5 @@
 	\paragraph{} Sin embargo, en la Figura \ref{7nprox}, la estimación obtenida es de $61.535$, y el fenómeno que se observó antes es inexistente. Luego, se podría concluir que lo antes observado responde al azar producto del \textit{ruido} al tomar la filmación. Además, dada la falta de precisión en todas las medidas en las que se utilizó el antebrazo, podría decirse que dicho sector del cuerpo no es apropiada para estimaciones certeras.
 	
 	
-	\newpage
-	\begin{thebibliography}{9}
-	
-
-	
-	\end{thebibliography}
 	
 \end{document}
