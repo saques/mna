@@ -5,6 +5,7 @@ kivy.require('1.10.0')
 
 import numpy as np
 import cv2
+import time
 from time import sleep
 
 
@@ -53,6 +54,7 @@ def fft_ct(x):
 	return fft_ct_1(x, N)
 
 def compute_hr(n, fps, r):
+
 	f = (np.linspace(-n/2,n/2-1,n)*fps/n)*60
 
 	r = r[0,0:n]-np.mean(r[0,0:n])
@@ -61,10 +63,11 @@ def compute_hr(n, fps, r):
 
 	filter = np.zeros(n)
 	inc = (fps/n)*60
-	filter[int(n/2+55/inc):int(n/2+110/inc)] = 1
+	filter[int(n/2+60/inc):int(n/2+110/inc)] = 1
 	R *= filter
 
-	print(abs(f[np.argmax(R)]))
+	for k in range(0, n):
+		print "%f " % R[k]
 
 	return abs(f[np.argmax(R)])
 
@@ -73,20 +76,24 @@ class CameraBundle:
 
 	def __init__(self):
 		self.cam = CoreCamera(index=0,resolution=(640,480))
-		self.cam.start()
 		self.caminstance = self.cam._android_camera
+
+	def start(self):
+		self.cam.start()
+
+	def stop(self):
+		self.cam.stop()
 
 	def fps(self):
 		return self.cam.fps
 
 	def capture(self, n):
 		frames = []
-		st = 1.0/self.cam.fps
+		st = 1.0/29.97
 
 		self._flash_on()		
 		
 		for i in range(0,n):
-			print(i)
 			frames.append(self.cam.grab_frame())
 			sleep(st)
 		
@@ -99,13 +106,14 @@ class CameraBundle:
 		for i in range(0,len(frames)):
 			frame = self.cam.decode_frame(frames[i])
 			frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-			r[0,i] = np.mean(frame[220:240,300:320])
+			r[0,i] = np.mean(frame[180:260:5,270:340:5])
+			print r[0,i]
 		return r
 
 	def _flash_on(self):
 		p = self.caminstance.getParameters()
 		p.setFlashMode(Parameters.FLASH_MODE_TORCH)
-		p.setExposureCompensation(-1)
+		p.setExposureCompensation(-2)
 		self.caminstance.setParameters(p)
 
 	def _flash_off(self):
@@ -130,18 +138,20 @@ class TestCamera(App):
 	def build(self):
 		self.box = CameraClick()
 		self.cb = CameraBundle()
-        	return self.box
+		self.cb.start()        	
+		return self.box
 
 	def capture(self):
 		n = 1024
-
-		fps = self.cb.fps()
-
+		
+		fps = 29.97		
 		frames = self.cb.capture(n)
-
+		
 		r = self.cb.decode(frames)
 
-		bpm = compute_hr(n, fps, r)
+		r = r[:,100:100+n/2]
+
+		bpm = compute_hr(n/2, fps, r)
 
 		self.box.change_text("Rate: %f bpm." % (bpm))
 
