@@ -20,7 +20,7 @@
 \newtheorem{theorem}{Propiedad}
 
 \begin{document}
-	\title{Medición del ritmo cardíaco por medios ópticos\\ 
+	\title{Medición del ritmo cardíaco por fotopletismografía\\ 
 		   \large{\textsc{Métodos Numéricos Avanzados}} \\
 		   \normalsize{\textsc{Instituto Tecnológico de Buenos Aires}}}
 	\author{
@@ -43,10 +43,17 @@
 	\maketitle
 	
 	\begin{abstract}
+		
+		El ritmo cardíaco $($\textit{Heart Rate}$)$ es un indicador importante del estado fisiológico de una persona. Tradicionalmente, dicho indicador se mide con instrumentos como puede ser un estetoscopio, o bien incluso mediante una simple palpación de las zonas aledañas al corazón.
+		
+		En este trabajo, se analizó la perspectiva de utilizar una cámara digital con su \textbf{LED} para la determinación del ritmo cardíaco, realizando un análisis de las frecuencias presentes en un vídeo capturado con dicha cámara para la estimación del mencionado indicador.
+		
+		Se ha constatado que este método es, en efecto, y con el \textit{hardware} apropiado, un método válido para realizar aproximaciones del ritmo cardíaco de un individuo. Si bien sus resultados no deberían ser tenidos en cuenta con propósitos médicos, los datos obtenidos han exhibido que el método analizado puede arrojar resultados con un error relativo de entorno al $5\%$.
+		
 
 	\end{abstract}
 	
-	\paragraph{Palabras clave:}
+	\paragraph{Palabras clave:} Serie de Fourier, Transformada de Fourier $($continua/discreta$)$, \textit{Fast Fourier Transform}, Filtros de banda.
 	
 	\section{Transformada de Fourier}
 	
@@ -157,7 +164,7 @@
 	\paragraph{} Sea $W_{n} = \exp^{-\frac{2\pi i}{N}}$. Luego, puede verse que:
 	
 	\begin{align}
-		W_{n}^{kn} = \exp^{-2\pi i k} = 1
+		W_{n}^{kN} = \exp^{-2\pi i k} = 1
 	\end{align}
 	
 	Luego, se tienen las siguientes propiedades:
@@ -184,7 +191,7 @@
 		&= \sum_{r=0}^{\frac{N}{2}-1}x_{2r}(W_{N}^{2})^{kr} + W_{N}^{k}\sum_{r=0}^{\frac{N}{2}-1}x_{2r+1}(W_{N}^{2})^{kr}
 	\end{align}
 	
-	\paragraph{} Como $W_{N}^{2} = \exp^{-\frac{2\pi i}{N}} = \exp^{-\frac{2\pi i}{\frac{N}{2}}} = W_{\frac{N}{2}}$.
+	\paragraph{} Como $W_{N}^{2} = \exp^{-\frac{2\pi i}{N}2} = \exp^{-\frac{2\pi i}{\frac{N}{2}}} = W_{\frac{N}{2}}$.
 	
 	\paragraph{} Sea $X_{p_{k}}$ la \textbf{TDF} para las muestras pares y $X_{i_{k}}$ para las impares. Esto implica que se pueden calcular de forma independiente $X_{p_{k}}$ y $X_{i_{k}}$, ambas con $\frac{N}{2}$ muestras en vez de $N$, luego combinando los resultados para obtener $X_{k}$.
 	
@@ -206,6 +213,8 @@
 	\end{align*}
 	
 	\paragraph{} A partir de estos resultados se puede realizar un algoritmo recursivo para calcular la \textbf{TDF} con orden computacional $O(n\cdot \log n)$. A continuación, presentamos el pseudo-código de la transformada rápida de Fourier siguiendo este método:
+	
+	\newpage
 	  
 	  
 	\begin{lstlisting}[frame=single]  % Start your code-block
@@ -230,7 +239,19 @@
 	
 	\section{Método}
 	
-	\paragraph{} TODO AFTER LUNCH BREAK
+	\paragraph{} Lo primero a tener cuenta cuando se toman muestras de una señal es el ancho de banda. El latido de un corazón humano promedio se encuentra entre los 60 (1 Hz) y 100 (1.667 Hz) latidos por minuto (ppm o \textit{bpm}) y varía según la edad, el estado físico  y la actividad física que se esté realizando. Según la \textbf{ley de Nyquist}, la frecuencia del muestreo debe ser de por lo menos el doble del valor máximo posible (3.334 Hz) para capturar todo el rango de frecuencias de los latidos sin posibilidad de que exista \textit{aliasing}. Una cámara estándar filma vídeos en al menos 30 fps, es decir, con una frecuencia de al menos 30 Hz. Por ende, se puede decir que la frecuencia de muestreo provista por un \textit{hardware} básico es suficiente para los fines de este trabajo.
+	
+	\paragraph{} Uno de los primeros análisis que pueden realizarse se vincula con la definición de un área de interés (\textbf{ROI}) para la extracción de datos de cada trama. El objetivo es obtener de cada trama un escalar representativo.  La \textbf{ROI} definida es, a menudo,  un \textit{trade-off} entre la carga computacional y la influencia del ruido en las muestras extraídas. Si su tamaño es muy grande (eventualmente tomando toda la trama), es probable que la onda generada a partir del promedio de los valores en la \textbf{ROI} sea menos sensible al ruido, pero se requerirá un mayor esfuerzo computacional. En cambio, si el tamaño es muy pequeño, el tiempo computacional será menor, pero la podría ser más susceptible al ruido. En la sección de Resultados se analizarán diferentes \textit{ROI} a los efectos de determinar una \textbf{ROI} que busque minimizar tanto el ruido como el tiempo de ejecución del algoritmo.
+
+	\paragraph{} Una vez obtenido el vector de valores representativos de cada trama, se lo centraliza y se aplica \textbf{FFT} para transformar la señal en el dominio del tiempo al de las frecuencias.
+	
+	\paragraph{} Dado que las frecuencias de interés se encuentran en un rango de los 60 a 100/110 pulsaciones por minuto, se aplica un filtro cuadrado en dicho rango para eliminar frecuencias que no son de interés. Nótese que esto estaría descartando ritmos cardíacos anormales, pero no por ello imposibles.
+	
+	\paragraph{} Finalmente, se toma el máximo valor del vector de valores en frecuencias. El valor devuelto como aproximación al ritmo cardíaco es su correspondiente coordenada en las abscisas (frecuencias).
+	
+	\subsection{Colores en la trama}  
+	
+	\paragraph{} En este análisis, uno de los aspectos a tener en cuenta gira entorno a los colores en la trama. Dichas tramas poseen 3 componentes: R (\textit{red}), G (\textit{green}) y B \textit{blue}. Uno de los inconvenientes hallados se vincula con la captación de determinadas componentes en dispositivos móviles modernos: en algunos casos, se ha notado la completa ausencia de la componente del G (verde) al capturar vídeos por sobre la piel. Se estima que, en estos dispositivos, la cámara realiza correcciones de color que podrían eliminar componentes que serían imperceptibles al ojo humano, como podría ser el caso de los verdes en una imagen donde predominan los rojos. Por ende, y dado que el flujo de la sangre podría generar alteraciones en el nivel de brillo de todas las componentes como un todo, se ha resuelto convertir la trama en colores a \textbf{escala de grises}. En la sección de Resultados se podrá ver que este enfoque genera aproximaciones satisfactorias.
 	
 
 	\section{Resultados}
@@ -261,7 +282,7 @@
 	
 	\subsection{Mediciones del ritmo cardíaco}
 	
-	\paragraph{} Se han tomado 5 muestras de un individuo en diferentes partes del cuerpo, variando el uso del \textbf{LED} del dispositivo:
+	\paragraph{} Se han tomado 5 muestras de un individuo en diferentes partes del cuerpo, variando el uso del \textbf{LED} del dispositivo. Se han tomado 1024 tramas de $640x480$ píxeles, a una frecuencia de muestreo de 30 fps. Se entiende que el dispositivo utilizado (\textit{Samsung Galaxy Note II}) no realiza alteraciones sustanciales sobre las tramas obtenidas. A continuación se describen las áreas del cuerpo y las configuraciones tenidas en cuenta:
 	
 	\begin{enumerate}
 		\item Índice izquierdo $($cubriendo el \textbf{LED} con el mismo$)$,
@@ -388,6 +409,16 @@
 	\end{figure}
 	
 	\paragraph{} Sin embargo, en la Figura \ref{7nprox}, la estimación obtenida es de $61.535$, y el fenómeno que se observó antes es inexistente. Luego, se podría concluir que lo antes observado responde al azar producto del \textit{ruido} al tomar la filmación. Además, dada la falta de precisión en todas las medidas en las que se utilizó el antebrazo, podría decirse que dicho sector del cuerpo no es apropiada para estimaciones certeras.
+	
+	\section{Conclusión}
+	
+	\paragraph{} Se ha determinado que técnicas de fotopletismografía, utilizando cámaras no especializadas, pueden generar aproximaciones razonables al ritmo cardíaco de un individuo.
+	
+	\paragraph{} Asimismo, se ha descartado la opción de no utilizar una fuente de iluminación externa durante la captura de las tramas a analizar.
+	
+	\paragraph{} Se ha concluido que, por un lado, no es necesario que la región del cuerpo a analizar se pose sobre el \textbf{LED} del dispositivo. Por otro lado, se ha determinado que es necesario que el grosor del sector a analizar no supere el de un dedo humano. 
+	
+	\paragraph{} Por último, se ha probado que la extracción de datos desde tramas en \textbf{escala de grises} es un método igual de eficaz al de extraerlas desde tramas en colores. Sobre este punto, se agrega la necesidad de realizar \textbf{FFT} sobre 1 conjunto de datos en vez de 3.
 	
 	
 	
