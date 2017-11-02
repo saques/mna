@@ -161,24 +161,24 @@
 	
 	\paragraph{} Una versión mejorada de la implementación de la \textbf{FFT}, propuesta por Cooley y Tukey $($1965$)$, permite reducir el orden computacional a $O(n\cdot log n)$. La idea se basa en el aprovechamiento de las simetrías de $\exp^{-\frac{2\pi i k n}{N}}$ en la expresión de la \textbf{TDF}.
 	
-	\paragraph{} Sea $W_{n} = \exp^{-\frac{2\pi i}{N}}$. Luego, puede verse que:
+	\paragraph{} Sea $W_{N} = \exp^{-\frac{2\pi i}{N}}$. Luego, puede verse que:
 	
 	\begin{align}
-		W_{n}^{kN} = \exp^{-2\pi i k} = 1
+		W_{N}^{kN} = \exp^{-2\pi i k} = 1
 	\end{align}
 	
 	Luego, se tienen las siguientes propiedades:
 	
 	\begin{theorem}[Simetría conjugada compleja]
 		\begin{align*}
-			W_{n}^{k(N-n)} = W_{n}^{-kn} = (W_{n}^{kn})^{*}
+			W_{N}^{k(N-n)} = W_{N}^{-kn} = (W_{N}^{kn})^{*}
 		\end{align*}
 	\end{theorem}
 	
 	\begin{theorem}[Periodicidad en $n$ y $k$]
 		\begin{align*}
-			W_{n}^{kn} &= W_{n}^{k(N+n)} \\
-			&= W_{n}^{(k+N)n}
+			W_{N}^{kn} &= W_{N}^{k(N+n)} \\
+			&= W_{N}^{(k+N)n}
 		\end{align*}
 	\end{theorem}
 	
